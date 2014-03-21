@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/Ray Cao/Dropbox/CMU/18549 - Embedded Systems Design/18549/libraries/zxing_jar/javase-2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Ray Cao/Dropbox/CMU/18549 - Embedded Systems Design/18549/libraries/zxing_jar/core-2.2.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
