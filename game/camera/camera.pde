@@ -21,6 +21,23 @@ void setup() {
 
 void draw() {
   image(cam, width/2, height/2);
+  
+  
+  int id = cam.getCameraID();
+  int num = cam.getNumberOfCameras();
+  int h = cam.getPhotoHeight();
+  int w = cam.getPhotoWidth();
+  int zoom = cam.getZoom();
+  boolean flash = cam.isFlashEnabled();
+  boolean started = cam.isStarted();
+  
+  String info = "id: " + id + "\n" +
+                "num: " + num + "\n" +
+                "h: " + h + "\n" +
+                "w: " + w + "\n" +
+                "zoom: " + zoom + "\n" +
+                "flash: " + flash + "\n" +
+                "started: " + started + "\n";
 }
 
 void onCameraPreviewEvent()
