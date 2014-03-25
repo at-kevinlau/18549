@@ -68,16 +68,7 @@ void draw() {
                 
    text(info, 10, 10, 200,400);
    text(eventInfo, 220, 10, 420,400);
-   
-   /*
-   cam.read();
-  if (cam.savePhoto(fileName)) {
-    writeEvents++;
-  } else {
-    writeEvents--;
-  }
-  try { Thread.sleep(3000); } catch (Exception ex) {}
-  try {
+   try {
     readString = "(" + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[0] + ", "
         + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[1] + ", "
         + QRCodeTest.readQRCodeAngle(filePath, charset, decodeHintMap) + "): "
@@ -87,17 +78,16 @@ void draw() {
     readString = "failed to read:" + ex;
     readEvents--;
   }
-  captureEvents++;*/
 }
 
 void onCameraPreviewEvent()
 {
   cam.read();
-  if (cam.savePhoto(fileName)) {
+  /*if (cam.savePhoto(fileName)) {
     writeEvents++;
   } else {
     writeEvents--;
-  }
+  }*/
   try {
     readString = "(" + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[0] + ", "
         + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[1] + ", "
