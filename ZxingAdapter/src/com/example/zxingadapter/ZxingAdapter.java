@@ -40,6 +40,27 @@ public class ZxingAdapter {
 		decodeHintMap.put(DecodeHintType.CHARACTER_SET, CHARSET);
 	}
 
+	private static Result readQRCode(String filePath,
+			Map<DecodeHintType, Object> decodeHintMap) throws NotFoundException {
+		/*
+		 * JAVA IMPL, REMOVE ONCE WORKING ANDROID IMPL CONFIRMED BinaryBitmap
+		 * binaryBitmap = new BinaryBitmap(new HybridBinarizer( new
+		 * BufferedImageLuminanceSource( ImageIO.read(new
+		 * FileInputStream(filePath)))));
+		 */
+		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+		byte[] byteArray = stream.toByteArray();
+		LuminanceSource source = new PlanarYUVLuminanceSource(byteArray,
+				bitmap.getWidth(), bitmap.getHeight(), 0, 0, bitmap.getWidth(),
+				bitmap.getHeight(), false);
+		BinaryBitmap binaryBitmap = new BinaryBitmap(
+				new HybridBinarizer(source));
+
+		return new MultiFormatReader().decode(binaryBitmap, decodeHintMap);
+	}
+
 	public static void createQRCode(String qrCodeData, String filePath,
 			int qrCodeHeight, int qrCodeWidth) throws WriterException,
 			IOException {
@@ -61,23 +82,7 @@ public class ZxingAdapter {
 		setupHintMaps();
 
 		// Read QR Code from image
-		/*
-		 * JAVA IMPL, REMOVE ONCE WORKING ANDROID IMPL CONFIRMED BinaryBitmap
-		 * binaryBitmap = new BinaryBitmap(new HybridBinarizer( new
-		 * BufferedImageLuminanceSource( ImageIO.read(new
-		 * FileInputStream(filePath)))));
-		 */
-		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
-		byte[] byteArray = stream.toByteArray();
-		LuminanceSource source = new PlanarYUVLuminanceSource(byteArray,
-				bitmap.getWidth(), bitmap.getHeight(), 0, 0, bitmap.getWidth(),
-				bitmap.getHeight(), false);
-		BinaryBitmap binaryBitmap = new BinaryBitmap(
-				new HybridBinarizer(source));
-		Result qrCodeResult = new MultiFormatReader().decode(binaryBitmap,
-				decodeHintMap);
+		Result qrCodeResult = readQRCode(filePath, decodeHintMap);
 
 		// Return decoded text from QR Code
 		return qrCodeResult.getText();
@@ -92,17 +97,7 @@ public class ZxingAdapter {
 		float[] location = new float[2];
 
 		// Read QR Code from image
-		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
-		byte[] byteArray = stream.toByteArray();
-		LuminanceSource source = new PlanarYUVLuminanceSource(byteArray,
-				bitmap.getWidth(), bitmap.getHeight(), 0, 0, bitmap.getWidth(),
-				bitmap.getHeight(), false);
-		BinaryBitmap binaryBitmap = new BinaryBitmap(
-				new HybridBinarizer(source));
-		Result qrCodeResult = new MultiFormatReader().decode(binaryBitmap,
-				decodeHintMap);
+		Result qrCodeResult = readQRCode(filePath, decodeHintMap);
 
 		// Read location data from QR Code
 		location[0] = qrCodeResult.getResultPoints()[1].getX();
@@ -122,17 +117,7 @@ public class ZxingAdapter {
 		float topRightX, topRightY;
 
 		// Read QR Code from image
-		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
-		byte[] byteArray = stream.toByteArray();
-		LuminanceSource source = new PlanarYUVLuminanceSource(byteArray,
-				bitmap.getWidth(), bitmap.getHeight(), 0, 0, bitmap.getWidth(),
-				bitmap.getHeight(), false);
-		BinaryBitmap binaryBitmap = new BinaryBitmap(
-				new HybridBinarizer(source));
-		Result qrCodeResult = new MultiFormatReader().decode(binaryBitmap,
-				decodeHintMap);
+		Result qrCodeResult = readQRCode(filePath, decodeHintMap);
 
 		// Determine angle of QR Code
 		topLeftX = qrCodeResult.getResultPoints()[1].getX();
