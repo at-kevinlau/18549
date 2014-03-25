@@ -1,11 +1,12 @@
 package com.example.zxingadapter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.graphics.Bitmap;
@@ -21,7 +22,7 @@ import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.NotFoundException;
-import com.google.zxing.PlanarYUVLuminanceSource;
+import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -48,40 +49,43 @@ public class ZxingAdapter {
 	 * @throws IOException
 	 */
 	public static void createQRCode(String qrCodeData, String filePath,
-			int qrCodeHeight, int qrCodeWidth) throws IOException,
-			WriterException {
-		// Setup hint maps
-		setupHintMaps();
+			int qrCodeHeight, int qrCodeWidth) {
+		try {
+			// Setup hint maps
+			setupHintMaps();
 
-		// Write QR code
-		BitMatrix matrix = new MultiFormatWriter()
-				.encode(new String(qrCodeData.getBytes(CHARSET), CHARSET),
-						BarcodeFormat.QR_CODE, qrCodeWidth, qrCodeHeight,
-						encodeHintMap);
+			// Write QR code
+			BitMatrix matrix = new MultiFormatWriter().encode(new String(
+					qrCodeData.getBytes(CHARSET), CHARSET),
+					BarcodeFormat.QR_CODE, qrCodeWidth, qrCodeHeight,
+					encodeHintMap);
 
-		// Write BitMatrix to Bitmap
-		int bitmapHeight = matrix.getHeight();
-		int bitmapWidth = matrix.getWidth();
-		Bitmap bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
-				Bitmap.Config.RGB_565);
-		for (int x = 0; x < bitmapWidth; x++) {
-			for (int y = 0; y < bitmapHeight; y++) {
-				bitmap.setPixel(x, y, matrix.get(x, y) ? Color.BLACK
-						: Color.WHITE);
+			// Write BitMatrix to Bitmap
+			int bitmapHeight = matrix.getHeight();
+			int bitmapWidth = matrix.getWidth();
+			Bitmap bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
+					Bitmap.Config.RGB_565);
+			for (int x = 0; x < bitmapWidth; x++) {
+				for (int y = 0; y < bitmapHeight; y++) {
+					bitmap.setPixel(x, y, matrix.get(x, y) ? Color.BLACK
+							: Color.WHITE);
+				}
 			}
+
+			// Determine save location
+			String sdCardDirectory = Environment.getExternalStorageDirectory()
+					.toString();
+			File image = new File(sdCardDirectory + "/qrcode.png");
+
+			// Encode the file as a PNG image and save the image
+			FileOutputStream outStream = new FileOutputStream(image);
+
+			bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream);
+			outStream.flush();
+			outStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-
-		// Determine save location
-		String sdCardDirectory = Environment.getExternalStorageDirectory()
-				.toString();
-		File image = new File(sdCardDirectory + "/qrcode.png");
-
-		// Encode the file as a PNG image and save the image
-		FileOutputStream outStream = new FileOutputStream(image);
-
-		bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream);
-		outStream.flush();
-		outStream.close();
 
 	}
 
@@ -95,16 +99,21 @@ public class ZxingAdapter {
 	 * @throws IOException
 	 * @throws NotFoundException
 	 */
-	public static String readQRCodeString(String filePath)
-			throws FileNotFoundException, IOException, NotFoundException {
-		// Setup hint maps
-		setupHintMaps();
+	public static String readQRCodeString(String filePath) {
+		try {
+			// Setup hint maps
+			setupHintMaps();
 
-		// Read QR Code from image
-		Result qrCodeResult = readQRCode(filePath, decodeHintMap);
+			// Read QR Code from image
+			Result qrCodeResult = readQRCode(filePath, decodeHintMap);
 
-		// Return decoded text from QR Code
-		return qrCodeResult.getText();
+			// Return decoded text from QR Code
+			return qrCodeResult.getText();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	/**
@@ -119,22 +128,27 @@ public class ZxingAdapter {
 	 * @throws IOException
 	 * @throws NotFoundException
 	 */
-	public static float[] readQRCodeLocation(String filePath)
-			throws FileNotFoundException, IOException, NotFoundException {
-		// Setup hint maps
-		setupHintMaps();
+	public static float[] readQRCodeLocation(String filePath) {
+		try {
+			// Setup hint maps
+			setupHintMaps();
 
-		// Initialize local variables
-		float[] location = new float[2];
+			// Initialize local variables
+			float[] location = new float[2];
 
-		// Read QR Code from image
-		Result qrCodeResult = readQRCode(filePath, decodeHintMap);
+			// Read QR Code from image
+			Result qrCodeResult = readQRCode(filePath, decodeHintMap);
 
-		// Read location data from QR Code
-		location[0] = qrCodeResult.getResultPoints()[1].getX();
-		location[1] = qrCodeResult.getResultPoints()[1].getY();
+			// Read location data from QR Code
+			location[0] = qrCodeResult.getResultPoints()[1].getX();
+			location[1] = qrCodeResult.getResultPoints()[1].getY();
 
-		return location;
+			return location;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	/**
@@ -148,28 +162,33 @@ public class ZxingAdapter {
 	 * @throws IOException
 	 * @throws NotFoundException
 	 */
-	public static float readQRCodeAngle(String filePath)
-			throws FileNotFoundException, IOException, NotFoundException {
-		// Setup hint maps
-		setupHintMaps();
+	public static float readQRCodeAngle(String filePath) {
+		try {
+			// Setup hint maps
+			setupHintMaps();
 
-		// Initialize local variables
-		float angle;
-		float topLeftX, topLeftY;
-		float topRightX, topRightY;
+			// Initialize local variables
+			float angle;
+			float topLeftX, topLeftY;
+			float topRightX, topRightY;
 
-		// Read QR Code from image
-		Result qrCodeResult = readQRCode(filePath, decodeHintMap);
+			// Read QR Code from image
+			Result qrCodeResult = readQRCode(filePath, decodeHintMap);
 
-		// Determine angle of QR Code
-		topLeftX = qrCodeResult.getResultPoints()[1].getX();
-		topLeftY = qrCodeResult.getResultPoints()[1].getY();
-		topRightX = qrCodeResult.getResultPoints()[0].getX();
-		topRightY = qrCodeResult.getResultPoints()[0].getY();
-		angle = (float) Math.toDegrees(Math.atan2(topRightX - topLeftX,
-				topRightY - topLeftY));
+			// Determine angle of QR Code
+			topLeftX = qrCodeResult.getResultPoints()[1].getX();
+			topLeftY = qrCodeResult.getResultPoints()[1].getY();
+			topRightX = qrCodeResult.getResultPoints()[0].getX();
+			topRightY = qrCodeResult.getResultPoints()[0].getY();
+			angle = (float) Math.toDegrees(Math.atan2(topRightX - topLeftX,
+					topRightY - topLeftY));
 
-		return angle < 0 ? angle + 360 : angle;
+			return angle < 0 ? angle + 360 : angle;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return -1;
 	}
 
 	/**
@@ -182,6 +201,9 @@ public class ZxingAdapter {
 
 		decodeHintMap = new HashMap<DecodeHintType, Object>();
 		decodeHintMap.put(DecodeHintType.CHARACTER_SET, CHARSET);
+		List<BarcodeFormat> possibleFormats = new ArrayList<BarcodeFormat>();
+		possibleFormats.add(BarcodeFormat.QR_CODE);
+		decodeHintMap.put(DecodeHintType.POSSIBLE_FORMATS, possibleFormats);
 	}
 
 	/**
@@ -195,24 +217,39 @@ public class ZxingAdapter {
 	 * @throws NotFoundException
 	 */
 	private static Result readQRCode(String filePath,
-			Map<DecodeHintType, Object> decodeHintMap) throws NotFoundException {
-		/*
-		 * JAVA IMPL, REMOVE ONCE WORKING ANDROID IMPL CONFIRMED BinaryBitmap
-		 * binaryBitmap = new BinaryBitmap(new HybridBinarizer( new
-		 * BufferedImageLuminanceSource( ImageIO.read(new
-		 * FileInputStream(filePath)))));
-		 */
-		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-		byte[] byteArray = stream.toByteArray();
-		LuminanceSource source = new PlanarYUVLuminanceSource(byteArray,
-				bitmap.getWidth(), bitmap.getHeight(), 0, 0, bitmap.getWidth(),
-				bitmap.getHeight(), false);
-		BinaryBitmap binaryBitmap = new BinaryBitmap(
-				new HybridBinarizer(source));
+			Map<DecodeHintType, Object> decodeHintMap) {
 
-		return new MultiFormatReader().decode(binaryBitmap, decodeHintMap);
+		try {
+			Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+			/*
+			 * JAVA IMPL, REMOVE ONCE WORKING ANDROID IMPL CONFIRMED
+			 * 
+			 * BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
+			 * new BufferedImageLuminanceSource( ImageIO.read(new
+			 * FileInputStream(filePath)))));
+			 */
+			/*
+			 * YUV for android cameras?
+			 * 
+			 * ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			 * bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream); byte[]
+			 * byteArray = stream.toByteArray(); LuminanceSource source = new
+			 * PlanarYUVLuminanceSource(byteArray, bitmap.getWidth(),
+			 * bitmap.getHeight(), 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+			 * false);
+			 */
+			int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+			bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0,
+					bitmap.getWidth(), bitmap.getHeight());
+			LuminanceSource source = new RGBLuminanceSource(bitmap.getWidth(),
+					bitmap.getHeight(), pixels);
+			BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
+					source));
+
+			return new MultiFormatReader().decode(binaryBitmap, decodeHintMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
-
 }
