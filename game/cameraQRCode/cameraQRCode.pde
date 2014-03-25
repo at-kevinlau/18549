@@ -1,7 +1,5 @@
 import ketai.camera.*;
-import QRCodeTest.QRCodeTest;
-import java.util.HashMap;
-import java.util.Map;
+import com.example.zxingadapter.ZxingAdapter;
 
 /**
  * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
@@ -20,16 +18,13 @@ int captureEvents = 0;
 int lastEvent = 0;
 int writeEvents = 0;
 int readEvents = 0;
-String charset = "ISO-8859-1";
-Map<DecodeHintType, String> decodeHintMap = new HashMap<DecodeHintType, String>();
 String readString = "nothing read yet";
-String fileName = "tableTanksCapture.jpg";
-String filePath = "mnt/sdcard/Pictures/cameraQRCode/tableTanksCapture.jpg";
+//String fileName = "tableTanksCapture.jpg";
+//String filePath = "mnt/sdcard/Pictures/cameraQRCode/tableTanksCapture.jpg";
+boolean isReady = false;
     
 void setup() {
-  decodeHintMap.put(DecodeHintType.CHARACTER_SET, charset);
   orientation(LANDSCAPE);
-  imageMode(CENTER);
   cam = new KetaiCamera(this, 320, 240, 24);
   cam.start();
   textSize(18);
@@ -37,7 +32,7 @@ void setup() {
 
 void draw() {
   background(51);
-  image(cam, 0,0, width*2, height*2);
+  image(cam, 0,0, width, height);
   cam.read();
   
   int id = cam.getCameraID();
@@ -68,26 +63,52 @@ void draw() {
                 
    text(info, 10, 10, 200,400);
    text(eventInfo, 220, 10, 420,400);
-   try {
-    readString = "(" + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[0] + ", "
-        + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[1] + ", "
-        + QRCodeTest.readQRCodeAngle(filePath, charset, decodeHintMap) + "): "
-        + QRCodeTest.readQRCodeString(filePath, charset, decodeHintMap);
-        readEvents++;
-  } catch (Exception ex) {
-    readString = "failed to read:" + ex;
-    readEvents--;
-  }
+/*   if (isReady) {
+     // store QR code
+       cam.read();
+      if (cam.savePhoto(fileName)) {
+        writeEvents++;
+      } else {
+        writeEvents--;
+      }
+
+     //read QR Code
+     try {
+       readString = "(" + ZxingAdapter.readQRCodeLocation(filePath)[0] + ", "
+           + ZxingAdapter.readQRCodeLocation(filePath)[1] + ", "
+           + ZxingAdapter.readQRCodeAngle(filePath) + "): "
+           + ZxingAdapter.readQRCodeString(filePath);
+           readEvents++;
+     } catch (Exception ex) {
+       readString = "failed to read:" + ex;
+       readEvents--;
+     }
+   }
+   */
 }
 
 void onCameraPreviewEvent()
 {
   cam.read();
-  /*if (cam.savePhoto(fileName)) {
+  cam.loadPixels();
+  try {
+    readString = "(" + ZxingAdapter.readQRcodeLocation(cam.pixels, cam.width, cam.height)[0] + ", "
+        + ZxingAdapter.readQRcodeLocation(cam.pixels, cam.width, cam.height)[1] + ", "
+        + ZxingAdapter.readQRCodeAngle(cam.pixels, cam.width, cam.height) + "): "
+        + ZxingAdapter.readQRCodeString(cam.pixels, cam.width, cam.height);
+    readEvents++;
+  } catch (Exception ex) {
+    readString = "failed to read:" + ex;
+    readEvents--;
+  }
+  captureEvents++;
+  /*
+  cam.read();
+  if (cam.savePhoto(fileName)) {
     writeEvents++;
   } else {
     writeEvents--;
-  }*/
+  }
   try {
     readString = "(" + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[0] + ", "
         + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[1] + ", "
@@ -99,6 +120,7 @@ void onCameraPreviewEvent()
     readEvents--;
   }
   captureEvents++;
+  */
 }
 
 // start/stop camera preview by tapping the screen

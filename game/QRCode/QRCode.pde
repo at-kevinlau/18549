@@ -5,8 +5,11 @@ String info = "UNINITIATED";
 void setup() {
   textSize(18);
   background(51);
+  PImage photo = loadImage(filePath);
+  photo.loadPixels();
 try {
-  info = ZxingAdapter.readQRCodeString(filePath) + ZxingAdapter.readQRCodeLocation(filePath) + ZxingAdapter.readQRCodeAngle(filePath);  
+  //info = ZxingAdapter.readQRCodeString(filePath) + ZxingAdapter.readQRCodeLocation(filePath) + ZxingAdapter.readQRCodeAngle(filePath);
+  info = ZxingAdapter.readQRCodeString(photo.pixels, photo.width, photo.height);  
 } catch (Exception ex) {
   info = "FAIL: " + ex;
 }
