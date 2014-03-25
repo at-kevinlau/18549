@@ -116,6 +116,24 @@ public class ZxingAdapter {
 		return null;
 	}
 
+	public static String readQRCodeString(int[] pixels, int width, int height) {
+		try {
+			// Setup hint maps
+			setupHintMaps();
+
+			// Read QR Code from image
+			Result qrCodeResult = readQRCode(pixels, width, height,
+					decodeHintMap);
+
+			// Return decoded text from QR Code
+			return qrCodeResult.getText();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
 	/**
 	 * Reads (x,y) location of top left corner of QR code in image file from QR
 	 * code.
@@ -243,6 +261,21 @@ public class ZxingAdapter {
 					bitmap.getWidth(), bitmap.getHeight());
 			LuminanceSource source = new RGBLuminanceSource(bitmap.getWidth(),
 					bitmap.getHeight(), pixels);
+			BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
+					source));
+
+			return new MultiFormatReader().decode(binaryBitmap, decodeHintMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private static Result readQRCode(int[] pixels, int width, int height,
+			Map<DecodeHintType, Object> decodeHintMap) {
+		try {
+			LuminanceSource source = new RGBLuminanceSource(width,
+					height, pixels);
 			BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
 					source));
 
