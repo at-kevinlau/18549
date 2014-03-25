@@ -1,9 +1,7 @@
 package com.example.zxingadapter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,10 +19,8 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.NotFoundException;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
-import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
@@ -45,8 +41,6 @@ public class ZxingAdapter {
 	 *            Height of QR code image file.
 	 * @param qrCodeWidth
 	 *            Width of QR code image file.
-	 * @throws WriterException
-	 * @throws IOException
 	 */
 	public static void createQRCode(String qrCodeData, String filePath,
 			int qrCodeHeight, int qrCodeWidth) {
@@ -90,14 +84,11 @@ public class ZxingAdapter {
 	}
 
 	/**
-	 * Reads encoded data from QR code.
+	 * Reads encoded QR code string from image file.
 	 * 
 	 * @param filePath
 	 *            Location to load QR code image file
 	 * @return String encoded in QR code
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws NotFoundException
 	 */
 	public static String readQRCodeString(String filePath) {
 		try {
@@ -116,6 +107,14 @@ public class ZxingAdapter {
 		return null;
 	}
 
+	/**
+	 * Reads encoded QR code string from pixel array.
+	 * 
+	 * @param pixels
+	 * @param width
+	 * @param height
+	 * @return
+	 */
 	public static String readQRCodeString(int[] pixels, int width, int height) {
 		try {
 			// Setup hint maps
@@ -135,16 +134,12 @@ public class ZxingAdapter {
 	}
 
 	/**
-	 * Reads (x,y) location of top left corner of QR code in image file from QR
-	 * code.
+	 * Determines (x,y) location of top left corner of QR code from image file.
 	 * 
 	 * @param filePath
 	 *            Location to load QR code image file
 	 * @return Array containing (x,y) location of top left corner of QR code.
 	 *         Index 0 stores x. Index 1 stores y.
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws NotFoundException
 	 */
 	public static float[] readQRCodeLocation(String filePath) {
 		try {
@@ -170,15 +165,44 @@ public class ZxingAdapter {
 	}
 
 	/**
+	 * Determines (x,y) location of top left corner of QR code in pixel array
+	 * 
+	 * @param pixels
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	public static float[] readQRcodeLocation(int[] pixels, int width, int height) {
+		try {
+			// Setup hint maps
+			setupHintMaps();
+
+			// Initialize local variables
+			float[] location = new float[2];
+
+			// Read QR Code from image
+			Result qrCodeResult = readQRCode(pixels, width, height,
+					decodeHintMap);
+
+			// Read location data from QR Code
+			location[0] = qrCodeResult.getResultPoints()[1].getX();
+			location[1] = qrCodeResult.getResultPoints()[1].getY();
+
+			return location;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	/**
 	 * Reads angle of QR code image file. Normal viewing of QR code is 0
 	 * degrees. Angle is measured counter-clockwise up to 360 degrees.
 	 * 
 	 * @param filePath
 	 *            Location to load QR code image file
 	 * @return Angle of QR code in image file
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws NotFoundException
 	 */
 	public static float readQRCodeAngle(String filePath) {
 		try {
@@ -192,6 +216,36 @@ public class ZxingAdapter {
 
 			// Read QR Code from image
 			Result qrCodeResult = readQRCode(filePath, decodeHintMap);
+
+			// Determine angle of QR Code
+			topLeftX = qrCodeResult.getResultPoints()[1].getX();
+			topLeftY = qrCodeResult.getResultPoints()[1].getY();
+			topRightX = qrCodeResult.getResultPoints()[0].getX();
+			topRightY = qrCodeResult.getResultPoints()[0].getY();
+			angle = (float) Math.toDegrees(Math.atan2(topRightX - topLeftX,
+					topRightY - topLeftY));
+
+			return angle < 0 ? angle + 360 : angle;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return -1;
+	}
+
+	public static float readQRCodeAngle(int[] pixels, int width, int height) {
+		try {
+			// Setup hint maps
+			setupHintMaps();
+
+			// Initialize local variables
+			float angle;
+			float topLeftX, topLeftY;
+			float topRightX, topRightY;
+
+			// Read QR Code from image
+			Result qrCodeResult = readQRCode(pixels, width, height,
+					decodeHintMap);
 
 			// Determine angle of QR Code
 			topLeftX = qrCodeResult.getResultPoints()[1].getX();
@@ -225,14 +279,13 @@ public class ZxingAdapter {
 	}
 
 	/**
-	 * Reads an image file to produce QR code data
+	 * Decodes QR code data from image file
 	 * 
 	 * @param filePath
 	 *            Location to load QR code image file.
 	 * @param decodeHintMap
 	 *            Hint map to assist decoding QR code.
 	 * @return Result containing QR code data read from the image file.
-	 * @throws NotFoundException
 	 */
 	private static Result readQRCode(String filePath,
 			Map<DecodeHintType, Object> decodeHintMap) {
@@ -271,11 +324,20 @@ public class ZxingAdapter {
 		return null;
 	}
 
+	/**
+	 * Decodes QR code data from pixel array
+	 * 
+	 * @param pixels
+	 * @param width
+	 * @param height
+	 * @param decodeHintMap
+	 * @return
+	 */
 	private static Result readQRCode(int[] pixels, int width, int height,
 			Map<DecodeHintType, Object> decodeHintMap) {
 		try {
-			LuminanceSource source = new RGBLuminanceSource(width,
-					height, pixels);
+			LuminanceSource source = new RGBLuminanceSource(width, height,
+					pixels);
 			BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
 					source));
 
