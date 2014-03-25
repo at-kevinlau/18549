@@ -172,7 +172,7 @@ public class ZxingAdapter {
 	 * @param height
 	 * @return
 	 */
-	public static float[] readQRcodeLocation(int[] pixels, int width, int height) {
+	public static float[] readQRCodeLocation(int[] pixels, int width, int height) {
 		try {
 			// Setup hint maps
 			setupHintMaps();
