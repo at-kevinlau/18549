@@ -174,6 +174,10 @@ public class ZxingAdapter
 				topRightY = results[i].getResultPoints()[0].getY();
 				angle = (float) Math.toDegrees(Math.atan2(topRightX - topLeftX,
 						topRightY - topLeftY));
+				if (angle < 0)
+				{
+					angle += 360;
+				}
 
 				// Create and save QRCode object
 				qrCodes[i] = new QRCode(text, topLeftX, topLeftY, angle);

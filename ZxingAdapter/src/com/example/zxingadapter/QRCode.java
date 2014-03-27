@@ -31,6 +31,6 @@ public class QRCode {
 	
 	@Override
 	public String toString() {
-		return text + "(" + xPos + "," + yPos + ")";
+		return text + "(" + xPos + "," + yPos + "," + angle + ")";
 	}
 }

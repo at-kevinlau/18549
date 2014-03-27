@@ -14,12 +14,12 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 public class Tester {
 
-	private static final String FILE_PATH = "QRCodeR270.png";
+	private static final String FILE_PATH = "QRCode.png";
 	
 	public static void main(String[] args) throws WriterException, IOException,
 	NotFoundException {
-		String qrCodeData = "Hello World!";
-		String filePath = FILE_PATH;
+		String qrCodeData = "Kevin";
+		String filePath = qrCodeData + ".png";
 		String charset = "ISO-8859-1";
 		Map<EncodeHintType, ErrorCorrectionLevel> encodeHintMap = new HashMap<EncodeHintType, ErrorCorrectionLevel>();
 		encodeHintMap.put(EncodeHintType.ERROR_CORRECTION,
@@ -28,10 +28,8 @@ public class Tester {
 		decodeHintMap.put(DecodeHintType.CHARACTER_SET, charset);
 
 		// Create a QR code image file
-		/*
 		QRCodeTest.createQRCode(qrCodeData, filePath, charset, encodeHintMap, 200, 200);
 		System.out.println("QR Code Image created successfully");
-		*/
 		
 		// Read the QR code image file
 		System.out.println("QRCodeString: "

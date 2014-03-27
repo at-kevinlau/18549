@@ -6,10 +6,12 @@ import android.app.Activity;
 import android.view.Menu;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity
+{
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState)
+	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
@@ -25,25 +27,24 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu)
+	{
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
-	private String getQRCodeTestString() {
+	private String getQRCodeTestString()
+	{
 		String outString = "";
+		QRCode[] qrCodes = ZxingAdapter.readMultipleQRCode(Environment
+				.getExternalStorageDirectory() + "/Team14.png");
 
-		outString += "Attempting to retrieve: "
-				+ Environment.getExternalStorageDirectory() + "/QRCode.png";
-
-		try {
-			outString += ZxingAdapter.readQRCodeString(Environment
-					.getExternalStorageDirectory() + "/QRCode.png");
-		} catch (Exception e) {
-			e.printStackTrace();
+		for (QRCode qrCode : qrCodes)
+		{
+			outString += qrCode + "\n";
 		}
-
+		
 		return outString;
 	}
 }
