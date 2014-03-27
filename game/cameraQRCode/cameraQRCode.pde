@@ -19,8 +19,6 @@ int lastEvent = 0;
 int writeEvents = 0;
 int readEvents = 0;
 String readString = "nothing read yet";
-//String fileName = "tableTanksCapture.jpg";
-//String filePath = "mnt/sdcard/Pictures/cameraQRCode/tableTanksCapture.jpg";
 boolean isReady = false;
     
 void setup() {
@@ -92,35 +90,18 @@ void onCameraPreviewEvent()
   cam.read();
   cam.loadPixels();
   try {
-    readString = "(" + ZxingAdapter.readQRcodeLocation(cam.pixels, cam.width, cam.height)[0] + ", "
-        + ZxingAdapter.readQRcodeLocation(cam.pixels, cam.width, cam.height)[1] + ", "
-        + ZxingAdapter.readQRCodeAngle(cam.pixels, cam.width, cam.height) + "): "
-        + ZxingAdapter.readQRCodeString(cam.pixels, cam.width, cam.height);
+    com.example.zxingadapter.QRCode[] qrs = com.example.zxingadapter.ZxingAdapter.readMultipleQRCode(cam.pixels, cam.width, cam.height);
+    readString = "[";
+    for (com.example.zxingadapter.QRCode qr : qrs) {
+      readString += qr + "\n";
+    }
+    readString += "]";
     readEvents++;
   } catch (Exception ex) {
     readString = "failed to read:" + ex;
     readEvents--;
   }
   captureEvents++;
-  /*
-  cam.read();
-  if (cam.savePhoto(fileName)) {
-    writeEvents++;
-  } else {
-    writeEvents--;
-  }
-  try {
-    readString = "(" + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[0] + ", "
-        + QRCodeTest.readQRCodeLocation(filePath, charset, decodeHintMap)[1] + ", "
-        + QRCodeTest.readQRCodeAngle(filePath, charset, decodeHintMap) + "): "
-        + QRCodeTest.readQRCodeString(filePath, charset, decodeHintMap);
-        readEvents++;
-  } catch (Exception ex) {
-    readString = "failed to read:" + ex;
-    readEvents--;
-  }
-  captureEvents++;
-  */
 }
 
 // start/stop camera preview by tapping the screen
