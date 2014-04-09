@@ -26,6 +26,17 @@ public class ZxingAdapter
 	private static final String TOPRIGHT = "TOPRIGHT";
 	private static final String BOTTOMLEFT = "BOTTOMLEFT";
 
+	// Static calibration vars
+	private static final float DEFAULT_X_MIN = 0;
+	private static final float DEFAULT_Y_MIN = 0;
+	private static final float DEFAULT_X_MAX = Float.POSITIVE_INFINITY;
+	private static final float DEFAULT_Y_MAX = Float.POSITIVE_INFINITY;
+	private static final float DEFAULT_ORIGIN_X = 0;
+	private static final float DEFAULT_ORIGIN_Y = 0;
+	private static final float DEFAULT_RATIO_X = 1;
+	private static final float DEFAULT_RATIO_Y = 1;
+	private static final float DEFAULT_ANGLE = 0;
+	
 	// Calibration vars
 	private float sourceXMin;
 	private float sourceYMin;
@@ -36,6 +47,9 @@ public class ZxingAdapter
 	private float calibrationRatioX;
 	private float calibrationRatioY;
 	private float calibrationAngle;
+
+	// Control vars
+	private boolean readOutOfBounds = true;
 
 	/**
 	 * Constructor for uncalibrated reader
@@ -223,15 +237,15 @@ public class ZxingAdapter
 	public void decalibrate()
 	{
 		System.out.println("System uncalibrated - Default calibration in use");
-		sourceXMin = 0;
-		sourceXMax = Float.POSITIVE_INFINITY;
-		sourceYMin = 0;
-		sourceYMax = Float.POSITIVE_INFINITY;
-		sourceOriginX = 0;
-		sourceOriginY = 0;
-		calibrationRatioX = 1;
-		calibrationRatioY = 1;
-		calibrationAngle = 0;
+		sourceXMin = DEFAULT_X_MIN;
+		sourceXMax = DEFAULT_X_MAX;
+		sourceYMin = DEFAULT_Y_MIN;
+		sourceYMax = DEFAULT_Y_MAX;
+		sourceOriginX = DEFAULT_ORIGIN_X;
+		sourceOriginY = DEFAULT_ORIGIN_Y;
+		calibrationRatioX = DEFAULT_RATIO_X;
+		calibrationRatioY = DEFAULT_RATIO_Y;
+		calibrationAngle = DEFAULT_ANGLE;
 	}
 
 	/**
@@ -329,14 +343,19 @@ public class ZxingAdapter
 				// Get text
 				text = results[i].getText();
 
-				// If point is outside calibration area, skip
-				for (ResultPoint point : results[i].getResultPoints())
+				// Read out of bounds?
+				if (!readOutOfBounds)
 				{
-					if (point.getX() < sourceXMin || point.getX() > sourceXMax
-							|| point.getY() < sourceYMin
-							|| point.getY() > sourceYMax)
+					// If point is outside calibration area, skip
+					for (ResultPoint point : results[i].getResultPoints())
 					{
-						continue readerLoop;
+						if (point.getX() < sourceXMin
+								|| point.getX() > sourceXMax
+								|| point.getY() < sourceYMin
+								|| point.getY() > sourceYMax)
+						{
+							continue readerLoop;
+						}
 					}
 				}
 
@@ -412,6 +431,16 @@ public class ZxingAdapter
 		return readQRCode(pixels, width, height).getAngle();
 	}
 
+	public void enableReadOutOfBounds()
+	{
+		readOutOfBounds = true;
+	}
+
+	public void disableReadOutOfBounds()
+	{
+		readOutOfBounds = false;
+	}
+
 	/**
 	 * Generate hint maps for reader
 	 */
@@ -439,14 +468,14 @@ public class ZxingAdapter
 	private float[] scalePoint(float sourcePointX, float sourcePointY)
 	{
 		float[] targetPoint = new float[2];
-		
+
 		float rotatedPointX = (float) ((sourcePointX - sourceOriginX)
 				* Math.cos(calibrationAngle) + (sourcePointY - sourceOriginY)
 				* Math.sin(calibrationAngle));
 		float rotatedPointY = (float) (-(sourcePointX - sourceOriginX)
 				* Math.sin(calibrationAngle) + (sourcePointY - sourceOriginY)
 				* Math.cos(calibrationAngle));
-		
+
 		targetPoint[0] = rotatedPointX * calibrationRatioX;
 		targetPoint[1] = rotatedPointY * calibrationRatioY;
 
