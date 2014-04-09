@@ -18,7 +18,7 @@ public class Tester {
 	
 	public static void main(String[] args) throws WriterException, IOException,
 	NotFoundException {
-		String qrCodeData = "Kevin";
+		String qrCodeData = "BOTTOMLEFT";
 		String filePath = qrCodeData + ".png";
 		String charset = "ISO-8859-1";
 		Map<EncodeHintType, ErrorCorrectionLevel> encodeHintMap = new HashMap<EncodeHintType, ErrorCorrectionLevel>();
