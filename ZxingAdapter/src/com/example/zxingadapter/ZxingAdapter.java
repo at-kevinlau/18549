@@ -296,10 +296,15 @@ public class ZxingAdapter
 			// Use Results array to create QRCode array
 			QRCode[] qrCodes = new QRCode[results.length];
 			String text;
-			float sourceTopLeftX, sourceTopLeftY;
-			float sourceTopRightX, sourceTopRightY;
+			float sourceTopLeftX;
+			float sourceTopLeftY;
+			float sourceTopRightX;
+			float sourceTopRightY;
+			float sourceBottomLeftX;
+			float sourceBottomLeftY;
 			float[] topLeft;
 			float[] topRight;
+			float[] bottomLeft;
 			float angle;
 
 			readerLoop: for (int i = 0; i < results.length; i++)
@@ -323,10 +328,13 @@ public class ZxingAdapter
 				sourceTopLeftY = results[i].getResultPoints()[1].getY();
 				sourceTopRightX = results[i].getResultPoints()[0].getX();
 				sourceTopRightY = results[i].getResultPoints()[0].getY();
+				sourceBottomLeftX = results[i].getResultPoints()[2].getX();
+				sourceBottomLeftY = results[i].getResultPoints()[2].getY();
 
 				// Get scaled (x,y) position and angle
 				topLeft = scalePoint(sourceTopLeftX, sourceTopLeftY);
 				topRight = scalePoint(sourceTopRightX, sourceTopRightY);
+				bottomLeft = scalePoint(sourceBottomLeftX, sourceBottomLeftY);
 				angle = (float) Math.toDegrees(Math.atan2(topRight[0]
 						- topLeft[0], topRight[1] - topLeft[1]));
 				if (angle < 0)
@@ -335,7 +343,9 @@ public class ZxingAdapter
 				}
 
 				// Create and save QRCode object
-				qrCodes[i] = new QRCode(text, topLeft[0], topLeft[1], angle);
+				qrCodes[i] = new QRCode(text, topLeft[0], topLeft[1],
+						topRight[0], topRight[1], bottomLeft[0], bottomLeft[1],
+						angle);
 			}
 
 			// Return QRCode array
@@ -365,8 +375,8 @@ public class ZxingAdapter
 	{
 		float[] location = new float[2];
 		QRCode qrCode = readQRCode(filePath);
-		location[0] = qrCode.getX();
-		location[1] = qrCode.getY();
+		location[0] = qrCode.getCenterX();
+		location[1] = qrCode.getCenterY();
 		return location;
 	}
 
@@ -374,8 +384,8 @@ public class ZxingAdapter
 	{
 		float[] location = new float[2];
 		QRCode qrCode = readQRCode(pixels, width, height);
-		location[0] = qrCode.getX();
-		location[1] = qrCode.getY();
+		location[0] = qrCode.getCenterX();
+		location[1] = qrCode.getCenterY();
 		return location;
 	}
 
@@ -407,7 +417,7 @@ public class ZxingAdapter
 	}
 
 	/**
-	 * Scalse point to be on calibration target plane
+	 * Scales point to be on calibration target plane
 	 * 
 	 * @param sourcePointX
 	 * @param sourcePointY
