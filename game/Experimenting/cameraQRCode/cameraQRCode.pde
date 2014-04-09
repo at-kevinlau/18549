@@ -1,5 +1,6 @@
 import ketai.camera.*;
 import com.example.zxingadapter.ZxingAdapter;
+import com.example.zxingadapter.QRCode;
 
 /**
  * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
@@ -90,9 +91,9 @@ void onCameraPreviewEvent()
   cam.read();
   cam.loadPixels();
   try {
-    com.example.zxingadapter.QRCode[] qrs = com.example.zxingadapter.ZxingAdapter.readMultipleQRCode(cam.pixels, cam.width, cam.height);
+    QRCode[] qrs = ZxingAdapter.readMultipleQRCode(cam.pixels, cam.width, cam.height);
     readString = "[";
-    for (com.example.zxingadapter.QRCode qr : qrs) {
+    for (QRCode qr : qrs) {
       readString += qr + "\n";
     }
     readString += "]";
