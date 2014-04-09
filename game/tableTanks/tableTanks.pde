@@ -17,7 +17,7 @@ String eventInfo = "State: " + state;
 
 void setup() {
   orientation(LANDSCAPE);
-  cam = new KetaiCamera(this, 320, 240, 24);
+  cam = new KetaiCamera(this, 1280, 960, 24);
   cam.start();
   textSize(18);
   zxing = new ZxingAdapter();
@@ -27,13 +27,14 @@ void setup() {
 void draw() {
   fill(255);
   cam.read();
-  image(cam, 0,0, width, height);
   switch(state) {
   case START_MENU:
+    image(cam, 0,0, width, height);
     rect(0,0,100,100);
     rect(width-100, height-100, 100, 100);
     break;
   case CALIBRATION:
+    background(255);
     if ((offsetX != -1) && (offsetY != -1) && (gameWidth == -1) && (gameHeight == -1)) {
       ellipse(offsetX,offsetY,100, 100);
     }
@@ -117,7 +118,6 @@ void mousePressed() {
       gameHeight = mouseY - offsetY;
       print("2");
     } else {
-      // TODO: calibrate
       cam.loadPixels();
       zxing.calibrate(cam.pixels, cam.width, cam.height, "?", gameWidth, gameHeight);
       isCalibrated = true;
