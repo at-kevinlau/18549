@@ -26,6 +26,17 @@ public class ZxingAdapter
 	private static final String TOPRIGHT = "TOPRIGHT";
 	private static final String BOTTOMLEFT = "BOTTOMLEFT";
 
+	// Static calibration vars
+	private static final float DEFAULT_X_MIN = 0;
+	private static final float DEFAULT_Y_MIN = 0;
+	private static final float DEFAULT_X_MAX = Float.POSITIVE_INFINITY;
+	private static final float DEFAULT_Y_MAX = Float.POSITIVE_INFINITY;
+	private static final float DEFAULT_ORIGIN_X = 0;
+	private static final float DEFAULT_ORIGIN_Y = 0;
+	private static final float DEFAULT_RATIO_X = 1;
+	private static final float DEFAULT_RATIO_Y = 1;
+	private static final float DEFAULT_ANGLE = 0;
+	
 	// Calibration vars
 	private float sourceXMin;
 	private float sourceYMin;
@@ -36,6 +47,9 @@ public class ZxingAdapter
 	private float calibrationRatioX;
 	private float calibrationRatioY;
 	private float calibrationAngle;
+
+	// Control vars
+	private boolean readOutOfBounds = true;
 
 	/**
 	 * Constructor for uncalibrated reader
@@ -53,10 +67,9 @@ public class ZxingAdapter
 	 * @param targetWidth
 	 * @param targetHeight
 	 */
-	public ZxingAdapter(String filePath, String calibrationString,
-			int targetWidth, int targetHeight)
+	public ZxingAdapter(String filePath, int targetWidth, int targetHeight)
 	{
-		calibrate(filePath, calibrationString, targetWidth, targetHeight);
+		calibrate(filePath, targetWidth, targetHeight);
 	}
 
 	/**
@@ -69,11 +82,10 @@ public class ZxingAdapter
 	 * @param targetWidth
 	 * @param targetHeight
 	 */
-	public ZxingAdapter(int[] pixels, int width, int height,
-			String calibrationString, int targetWidth, int targetHeight)
+	public ZxingAdapter(int[] pixels, int width, int height, int targetWidth,
+			int targetHeight)
 	{
-		calibrate(pixels, width, height, calibrationString, targetWidth,
-				targetHeight);
+		calibrate(pixels, width, height, targetWidth, targetHeight);
 	}
 
 	/**
@@ -84,16 +96,15 @@ public class ZxingAdapter
 	 * @param targetWidth
 	 * @param targetHeight
 	 */
-	public void calibrate(String filePath, String calibrationString,
-			int targetWidth, int targetHeight)
+	public void calibrate(String filePath, int targetWidth, int targetHeight)
 	{
 		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
 		int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
 		bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(),
 				bitmap.getHeight());
 
-		calibrate(pixels, bitmap.getWidth(), bitmap.getHeight(),
-				calibrationString, targetWidth, targetHeight);
+		calibrate(pixels, bitmap.getWidth(), bitmap.getHeight(), targetWidth,
+				targetHeight);
 	}
 
 	/**
@@ -106,8 +117,8 @@ public class ZxingAdapter
 	 * @param targetWidth
 	 * @param targetHeight
 	 */
-	public void calibrate(int[] pixels, int width, int height,
-			String calibrationString, int targetWidth, int targetHeight)
+	public void calibrate(int[] pixels, int width, int height, int targetWidth,
+			int targetHeight)
 	{
 		boolean topLeftFound = false;
 		boolean topRightFound = false;
@@ -140,23 +151,23 @@ public class ZxingAdapter
 			// Locate 3 calibration QR codes
 			for (Result result : results)
 			{
-				if (result.getText() == TOPLEFT)
+				if (result.getText().equals(TOPLEFT))
 				{
 					topLeftFound = true;
 					topLeftX = result.getResultPoints()[1].getX();
 					topLeftY = result.getResultPoints()[1].getY();
 				}
-				else if (result.getText() == TOPRIGHT)
+				else if (result.getText().equals(TOPRIGHT))
 				{
 					topRightFound = true;
-					topRightX = result.getResultPoints()[0].getX();
-					topRightY = result.getResultPoints()[0].getY();
+					topRightX = result.getResultPoints()[2].getX();
+					topRightY = result.getResultPoints()[2].getY();
 				}
-				else if (result.getText() == BOTTOMLEFT)
+				else if (result.getText().equals(BOTTOMLEFT))
 				{
 					bottomLeftFound = true;
-					bottomLeftX = result.getResultPoints()[2].getX();
-					bottomLeftY = result.getResultPoints()[2].getY();
+					bottomLeftX = result.getResultPoints()[0].getX();
+					bottomLeftY = result.getResultPoints()[0].getY();
 				}
 			}
 
@@ -164,6 +175,20 @@ public class ZxingAdapter
 			// terminate calibration
 			if (!(topLeftFound && topRightFound && bottomLeftFound))
 			{
+				System.out.print("Calibration Failed - Missing ");
+				if (!topLeftFound)
+				{
+					System.out.print(TOPLEFT + ", ");
+				}
+				if (!topRightFound)
+				{
+					System.out.print(TOPRIGHT + ", ");
+				}
+				if (!bottomLeftFound)
+				{
+					System.out.print(BOTTOMLEFT + ", ");
+				}
+				System.out.println();
 				decalibrate();
 				return;
 			}
@@ -187,8 +212,13 @@ public class ZxingAdapter
 			calibrationRatioY = targetHeight / sourceHeight;
 
 			// Determine rotation angle
-			calibrationAngle = (float) (-Math.atan2(topRightX - topLeftX,
-					topRightY - topLeftY));
+			calibrationAngle = (float) (Math.atan2(topRightY - topLeftY,
+					topRightX - topLeftX));
+
+			System.out.println("System calibrated - Origin@(" + sourceOriginX
+					+ "," + sourceOriginY + "), XRatio:" + calibrationRatioX
+					+ ", YRatio: " + calibrationRatioY + ", Angle:"
+					+ calibrationAngle);
 
 		}
 		catch (Exception e)
@@ -206,15 +236,16 @@ public class ZxingAdapter
 	 */
 	public void decalibrate()
 	{
-		sourceXMin = 0;
-		sourceXMax = Float.POSITIVE_INFINITY;
-		sourceYMin = 0;
-		sourceYMax = Float.POSITIVE_INFINITY;
-		sourceOriginX = 0;
-		sourceOriginY = 0;
-		calibrationRatioX = 1;
-		calibrationRatioY = 1;
-		calibrationAngle = 0;
+		System.out.println("System uncalibrated - Default calibration in use");
+		sourceXMin = DEFAULT_X_MIN;
+		sourceXMax = DEFAULT_X_MAX;
+		sourceYMin = DEFAULT_Y_MIN;
+		sourceYMax = DEFAULT_Y_MAX;
+		sourceOriginX = DEFAULT_ORIGIN_X;
+		sourceOriginY = DEFAULT_ORIGIN_Y;
+		calibrationRatioX = DEFAULT_RATIO_X;
+		calibrationRatioY = DEFAULT_RATIO_Y;
+		calibrationAngle = DEFAULT_ANGLE;
 	}
 
 	/**
@@ -294,12 +325,17 @@ public class ZxingAdapter
 					binaryBitmap, decodeHintMap);
 
 			// Use Results array to create QRCode array
-			QRCode[] qrCodes = new QRCode[results.length];
+			List<QRCode> qrCodes = new ArrayList<QRCode>();
 			String text;
-			float sourceTopLeftX, sourceTopLeftY;
-			float sourceTopRightX, sourceTopRightY;
+			float sourceTopLeftX;
+			float sourceTopLeftY;
+			float sourceTopRightX;
+			float sourceTopRightY;
+			float sourceBottomLeftX;
+			float sourceBottomLeftY;
 			float[] topLeft;
 			float[] topRight;
+			float[] bottomLeft;
 			float angle;
 
 			readerLoop: for (int i = 0; i < results.length; i++)
@@ -307,39 +343,45 @@ public class ZxingAdapter
 				// Get text
 				text = results[i].getText();
 
-				// If point is outside calibration area, skip
-				for (ResultPoint point : results[i].getResultPoints())
+				// Read out of bounds?
+				if (!readOutOfBounds)
 				{
-					if (point.getX() < sourceXMin || point.getX() > sourceXMax
-							|| point.getY() < sourceYMin
-							|| point.getY() > sourceYMax)
+					// If point is outside calibration area, skip
+					for (ResultPoint point : results[i].getResultPoints())
 					{
-						continue readerLoop;
+						if (point.getX() < sourceXMin
+								|| point.getX() > sourceXMax
+								|| point.getY() < sourceYMin
+								|| point.getY() > sourceYMax)
+						{
+							continue readerLoop;
+						}
 					}
 				}
 
 				// Get source (x,y) position
 				sourceTopLeftX = results[i].getResultPoints()[1].getX();
 				sourceTopLeftY = results[i].getResultPoints()[1].getY();
-				sourceTopRightX = results[i].getResultPoints()[0].getX();
-				sourceTopRightY = results[i].getResultPoints()[0].getY();
+				sourceTopRightX = results[i].getResultPoints()[2].getX();
+				sourceTopRightY = results[i].getResultPoints()[2].getY();
+				sourceBottomLeftX = results[i].getResultPoints()[0].getX();
+				sourceBottomLeftY = results[i].getResultPoints()[0].getY();
 
 				// Get scaled (x,y) position and angle
 				topLeft = scalePoint(sourceTopLeftX, sourceTopLeftY);
 				topRight = scalePoint(sourceTopRightX, sourceTopRightY);
-				angle = (float) Math.toDegrees(Math.atan2(topRight[0]
-						- topLeft[0], topRight[1] - topLeft[1]));
-				if (angle < 0)
-				{
-					angle += 360;
-				}
+				bottomLeft = scalePoint(sourceBottomLeftX, sourceBottomLeftY);
+				angle = (float) Math.atan2(topRight[1] - topLeft[1],
+						topRight[0] - topLeft[0]);
 
 				// Create and save QRCode object
-				qrCodes[i] = new QRCode(text, topLeft[0], topLeft[1], angle);
+				qrCodes.add(new QRCode(text, topLeft[0], topLeft[1],
+						topRight[0], topRight[1], bottomLeft[0], bottomLeft[1],
+						angle));
 			}
 
 			// Return QRCode array
-			return qrCodes;
+			return qrCodes.toArray(new QRCode[qrCodes.size()]);
 
 		}
 		catch (Exception e)
@@ -365,8 +407,8 @@ public class ZxingAdapter
 	{
 		float[] location = new float[2];
 		QRCode qrCode = readQRCode(filePath);
-		location[0] = qrCode.getX();
-		location[1] = qrCode.getY();
+		location[0] = qrCode.getCenterX();
+		location[1] = qrCode.getCenterY();
 		return location;
 	}
 
@@ -374,8 +416,8 @@ public class ZxingAdapter
 	{
 		float[] location = new float[2];
 		QRCode qrCode = readQRCode(pixels, width, height);
-		location[0] = qrCode.getX();
-		location[1] = qrCode.getY();
+		location[0] = qrCode.getCenterX();
+		location[1] = qrCode.getCenterY();
 		return location;
 	}
 
@@ -387,6 +429,16 @@ public class ZxingAdapter
 	public float readQRCodeAngle(int[] pixels, int width, int height)
 	{
 		return readQRCode(pixels, width, height).getAngle();
+	}
+
+	public void enableReadOutOfBounds()
+	{
+		readOutOfBounds = true;
+	}
+
+	public void disableReadOutOfBounds()
+	{
+		readOutOfBounds = false;
 	}
 
 	/**
@@ -407,7 +459,7 @@ public class ZxingAdapter
 	}
 
 	/**
-	 * Scalse point to be on calibration target plane
+	 * Scales point to be on calibration target plane
 	 * 
 	 * @param sourcePointX
 	 * @param sourcePointY
@@ -418,17 +470,14 @@ public class ZxingAdapter
 		float[] targetPoint = new float[2];
 
 		float rotatedPointX = (float) ((sourcePointX - sourceOriginX)
-				* Math.cos(calibrationAngle) - (sourcePointY - sourceOriginY)
+				* Math.cos(calibrationAngle) + (sourcePointY - sourceOriginY)
 				* Math.sin(calibrationAngle));
-		float rotatedPointY = (float) ((sourcePointX - sourceOriginX)
+		float rotatedPointY = (float) (-(sourcePointX - sourceOriginX)
 				* Math.sin(calibrationAngle) + (sourcePointY - sourceOriginY)
 				* Math.cos(calibrationAngle));
 
-		float scaledPointX = rotatedPointX * calibrationRatioX;
-		float scaledPointY = rotatedPointY * calibrationRatioY;
-
-		targetPoint[0] = Math.round(scaledPointX);
-		targetPoint[1] = Math.round(scaledPointY);
+		targetPoint[0] = rotatedPointX * calibrationRatioX;
+		targetPoint[1] = rotatedPointY * calibrationRatioY;
 
 		return targetPoint;
 	}
