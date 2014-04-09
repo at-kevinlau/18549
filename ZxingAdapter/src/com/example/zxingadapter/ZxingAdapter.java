@@ -335,8 +335,8 @@ public class ZxingAdapter
 				topLeft = scalePoint(sourceTopLeftX, sourceTopLeftY);
 				topRight = scalePoint(sourceTopRightX, sourceTopRightY);
 				bottomLeft = scalePoint(sourceBottomLeftX, sourceBottomLeftY);
-				angle = (float) Math.toDegrees(Math.atan2(topRight[0]
-						- topLeft[0], topRight[1] - topLeft[1]));
+				angle = (float) Math.atan2(topRight[0] - topLeft[0],
+						topRight[1] - topLeft[1]);
 				if (angle < 0)
 				{
 					angle += 360;
