@@ -45,12 +45,6 @@ void draw() {
       translate(offsetX, offsetY);
       rect(0,0,gameWidth,gameHeight);
       translate(-offsetX, -offsetY);
-      if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
-        cam.loadPixels();
-        zxing.calibrate(cam.pixels, cam.width, cam.height, gameWidth, gameHeight);
-        isCalibrated = true;
-        eventInfo = "Calibration complete!";
-      }
     }
     break;
   default:
@@ -70,16 +64,24 @@ void draw() {
   }
   text(eventInfo, 220, 10, 420,400);
   
+  fill(0);
   if (qrs != null) {
-      for (QRCode qr:qrs) {
-        rotate(qr.getAngle());
-        if (!isCalibrated) {
+      if (!isCalibrated) {
+        for (QRCode qr:qrs) {
+          rotate(qr.getAngle());
           rect(qr.getTopLeftX()*0.592, qr.getTopLeftY()*0.592, 100, 100);
-        } else {
-          rect(qr.getTopLeftX(), qr.getTopLeftY(), 100, 100);
+          rotate(-qr.getAngle());
         }
-        rotate(-qr.getAngle());
+      } else {
+        translate(offsetX, offsetY);
+        for (QRCode qr:qrs) {
+          rotate(qr.getAngle());
+          rect(qr.getTopLeftX(), qr.getTopLeftY(), 100, 100);
+          rotate(-qr.getAngle());
+        }
+        translate(-offsetX, -offsetY);
       }
+      
     }
 }
 
@@ -93,6 +95,13 @@ void onCameraPreviewEvent()
         QRCode newQrs[] = zxing.readMultipleQRCode(cam.pixels, cam.width, cam.height);
         if ((newQrs != null) && (newQrs.length > 0)) { 
           qrs = newQrs;
+          if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
+            if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
+              zxing.calibrate(cam.pixels, cam.width, cam.height, gameWidth, gameHeight);
+              isCalibrated = true;
+              eventInfo = "Calibration complete!";
+            }
+          }
         }
       } catch (Exception ex) {
         eventInfo = "failed to read:" + ex;
