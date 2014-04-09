@@ -37,15 +37,18 @@ public class MainActivity extends Activity
 	private String getQRCodeTestString()
 	{
 		String outString = "";
-		ZxingAdapter reader = new ZxingAdapter();
+		
+		ZxingAdapter reader = new ZxingAdapter(
+				Environment.getExternalStorageDirectory()
+						+ "/CalibrationTest90.png", 100, 100);
 		QRCode[] qrCodes = reader.readMultipleQRCode(Environment
-				.getExternalStorageDirectory() + "/Team14.png");
+				.getExternalStorageDirectory() + "/CalibrationTest90.png");
 
 		for (QRCode qrCode : qrCodes)
 		{
 			outString += qrCode + "\n";
 		}
-		
+
 		return outString;
 	}
 }
