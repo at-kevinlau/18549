@@ -17,7 +17,7 @@ String eventInfo = "State: " + state;
 
 void setup() {
   orientation(LANDSCAPE);
-  cam = new KetaiCamera(this, 1280, 960, 24);
+  cam = new KetaiCamera(this, 1080, 1440, 24);
   cam.start();
   textSize(18);
   zxing = new ZxingAdapter();
@@ -34,7 +34,10 @@ void draw() {
     rect(width-100, height-100, 100, 100);
     break;
   case CALIBRATION:
-    background(255);
+    background(0);
+    fill(0);
+    stroke(204, 102, 0);
+    strokeWeight(5);
     if ((offsetX != -1) && (offsetY != -1) && (gameWidth == -1) && (gameHeight == -1)) {
       ellipse(offsetX,offsetY,100, 100);
     }
@@ -42,12 +45,11 @@ void draw() {
       translate(offsetX, offsetY);
       rect(0,0,gameWidth,gameHeight);
       translate(-offsetX, -offsetY);
-    }
-    if (qrs != null) {
-      for (QRCode qr:qrs) {
-        rotate(qr.getAngle());
-        rect(qr.getX(), qr.getY(), 100, 100);
-        rotate(-qr.getAngle());
+      if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
+        cam.loadPixels();
+        zxing.calibrate(cam.pixels, cam.width, cam.height, gameWidth, gameHeight);
+        isCalibrated = true;
+        eventInfo = "Calibration complete!";
       }
     }
     break;
@@ -61,12 +63,24 @@ void draw() {
   if (qrs != null) {
      coordinates = "[";
     for (QRCode qr:qrs) {
-      coordinates += qr + ",";
+      coordinates += qr + ",\n";
     } 
     coordinates += "]";
     text(coordinates, 10, 10, 200,400);
   }
   text(eventInfo, 220, 10, 420,400);
+  
+  if (qrs != null) {
+      for (QRCode qr:qrs) {
+        rotate(qr.getAngle());
+        if (!isCalibrated) {
+          rect(qr.getTopLeftX()*0.592, qr.getTopLeftY()*0.592, 100, 100);
+        } else {
+          rect(qr.getTopLeftX(), qr.getTopLeftY(), 100, 100);
+        }
+        rotate(-qr.getAngle());
+      }
+    }
 }
 
 void onCameraPreviewEvent()
@@ -76,7 +90,10 @@ void onCameraPreviewEvent()
     cam.loadPixels();
     if (zxing != null) {
       try {
-        qrs = zxing.readMultipleQRCode(cam.pixels, cam.width, cam.height);
+        QRCode newQrs[] = zxing.readMultipleQRCode(cam.pixels, cam.width, cam.height);
+        if ((newQrs != null) && (newQrs.length > 0)) { 
+          qrs = newQrs;
+        }
       } catch (Exception ex) {
         eventInfo = "failed to read:" + ex;
         print("failed to read:" + ex);
@@ -116,14 +133,11 @@ void mousePressed() {
     } else if ((gameWidth == -1) && (gameHeight == -1)) {
       gameWidth = mouseX - offsetX;
       gameHeight = mouseY - offsetY;
+      eventInfo = "Waiting for 3 QR Codes...";
       print("2");
     } else {
-      cam.loadPixels();
-      zxing.calibrate(cam.pixels, cam.width, cam.height, "?", gameWidth, gameHeight);
-      isCalibrated = true;
       state = START_MENU;
       eventInfo = "State: " + state; 
-      print("3");
     }
     break;
   default:
