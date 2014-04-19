@@ -185,26 +185,36 @@ void renderGame()
 
 void mousePressed()
 {
+  inputPressed(mouseX, mouseY);
+}
+void mouseReleased()
+{
+  inputRelease(mouseX, mouseY);
+}
+
+void inputPressed(int inX, int inY)
+{
   if (!gameOver)
   {
     for (Updatable u : updatables)
     {
-      u.registerMClick(mouseX, mouseY, currentPlayer);
+      u.registerMClick(inX, inY, currentPlayer);
     }
   } else
   {
     resetGame();
   }
 }
-void mouseReleased()
+
+void inputRelease(int inX, int inY)
 {
   if (!gameOver)
   {
     for (Updatable u : updatables)
     {
-      u.registerMRelease(mouseX, mouseY, currentPlayer);
+      u.registerMRelease(inX, inY, currentPlayer);
     }
-    makeMove(mouseX, mouseY);
+    makeMove(inX, inY);
   } else
   {
     resetGame();
