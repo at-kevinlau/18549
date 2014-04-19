@@ -2,6 +2,7 @@ package ZxingAdapter;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,12 +13,18 @@ import javax.imageio.ImageIO;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.multi.qrcode.QRCodeMultiReader;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 public class ZxingAdapter {
 	// Static vars
@@ -47,6 +54,8 @@ public class ZxingAdapter {
 	private float calibrationRatioX;
 	private float calibrationRatioY;
 	private float calibrationAngle;
+	private float offsetX = 0;
+	private float offsetY = 0;
 
 	// Control vars
 	private boolean readOutOfBounds = true;
@@ -66,8 +75,9 @@ public class ZxingAdapter {
 	 * @param targetWidth
 	 * @param targetHeight
 	 */
-	public ZxingAdapter(String filePath, int targetWidth, int targetHeight) {
-		calibrate(filePath, targetWidth, targetHeight);
+	public ZxingAdapter(String filePath, int targetWidth, int targetHeight,
+			float offsetX, float offsetY) {
+		calibrate(filePath, targetWidth, targetHeight, offsetX, offsetY);
 	}
 
 	/**
@@ -81,8 +91,33 @@ public class ZxingAdapter {
 	 * @param targetHeight
 	 */
 	public ZxingAdapter(int[] pixels, int width, int height, int targetWidth,
-			int targetHeight) {
-		calibrate(pixels, width, height, targetWidth, targetHeight);
+			int targetHeight, float offsetX, float offsetY) {
+		calibrate(pixels, width, height, targetWidth, targetHeight, offsetX,
+				offsetY);
+	}
+
+	/**
+	 * Writes a QRCode to image file
+	 * 
+	 * @param qrCodeData
+	 * @param filePath
+	 * @param charset
+	 * @param hintMap
+	 * @param qrCodeHeight
+	 * @param qrCodeWidth
+	 * @throws WriterException
+	 * @throws IOException
+	 */
+	@SuppressWarnings("deprecation")
+	public void createQRCode(String qrCodeData, String filePath,
+			String charset, Map<EncodeHintType, ErrorCorrectionLevel> hintMap,
+			int qrCodeHeight, int qrCodeWidth) throws WriterException,
+			IOException {
+		BitMatrix matrix = new MultiFormatWriter().encode(
+				new String(qrCodeData.getBytes(charset), charset),
+				BarcodeFormat.QR_CODE, qrCodeWidth, qrCodeHeight, hintMap);
+		MatrixToImageWriter.writeToFile(matrix, filePath.substring(filePath
+				.lastIndexOf('.') + 1), new File(filePath));
 	}
 
 	/**
@@ -93,13 +128,14 @@ public class ZxingAdapter {
 	 * @param targetWidth
 	 * @param targetHeight
 	 */
-	public void calibrate(String filePath, int targetWidth, int targetHeight) {
+	public void calibrate(String filePath, int targetWidth, int targetHeight,
+			float offsetX, float offsetY) {
 		try {
 			BufferedImage image = ImageIO.read(new File(filePath));
 			int[] pixels = image.getRGB(0, 0, image.getWidth(),
-					image.getHeight(), null, 0, 1);
+					image.getHeight(), null, 0, image.getWidth());
 			calibrate(pixels, image.getWidth(), image.getHeight(), targetWidth,
-					targetHeight);
+					targetHeight, offsetX, offsetY);
 		} catch (Exception e) {
 			decalibrate();
 			e.printStackTrace();
@@ -117,7 +153,7 @@ public class ZxingAdapter {
 	 * @param targetHeight
 	 */
 	public void calibrate(int[] pixels, int width, int height, int targetWidth,
-			int targetHeight) {
+			int targetHeight, float offsetX, float offsetY) {
 		boolean topLeftFound = false;
 		boolean topRightFound = false;
 		boolean bottomLeftFound = false;
@@ -205,10 +241,15 @@ public class ZxingAdapter {
 			calibrationAngle = (float) (Math.atan2(topRightY - topLeftY,
 					topRightX - topLeftX));
 
+			// Set offsets
+			this.offsetX = offsetX;
+			this.offsetY = offsetY;
+
 			System.out.println("System calibrated - Origin@(" + sourceOriginX
 					+ "," + sourceOriginY + "), XRatio:" + calibrationRatioX
 					+ ", YRatio: " + calibrationRatioY + ", Angle:"
-					+ calibrationAngle);
+					+ calibrationAngle + ", Offset:(" + offsetX + "," + offsetY
+					+ ")");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -233,6 +274,8 @@ public class ZxingAdapter {
 		calibrationRatioX = DEFAULT_RATIO_X;
 		calibrationRatioY = DEFAULT_RATIO_Y;
 		calibrationAngle = DEFAULT_ANGLE;
+		offsetX = 0;
+		offsetY = 0;
 	}
 
 	/**
@@ -281,7 +324,7 @@ public class ZxingAdapter {
 		try {
 			BufferedImage image = ImageIO.read(new File(filePath));
 			int[] pixels = image.getRGB(0, 0, image.getWidth(),
-					image.getHeight(), null, 0, 1);
+					image.getHeight(), null, 0, image.getWidth());
 
 			return readMultipleQRCode(pixels, image.getWidth(),
 					image.getHeight());
@@ -453,8 +496,8 @@ public class ZxingAdapter {
 				* Math.sin(calibrationAngle) + (sourcePointY - sourceOriginY)
 				* Math.cos(calibrationAngle));
 
-		targetPoint[0] = rotatedPointX * calibrationRatioX;
-		targetPoint[1] = rotatedPointY * calibrationRatioY;
+		targetPoint[0] = rotatedPointX * calibrationRatioX + offsetX;
+		targetPoint[1] = rotatedPointY * calibrationRatioY + offsetY;
 
 		return targetPoint;
 	}
