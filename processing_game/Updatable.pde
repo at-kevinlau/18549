@@ -6,6 +6,6 @@
 interface Updatable
 {
   void update(int mX, int mY);
-  void registerMClick(int mX, int mY);
-  void registerMRelease(int mX, int mY);
+  void registerMClick(int mX, int mY, Player currentPlayer);
+  void registerMRelease(int mX, int mY, Player currentPlayer);
 }

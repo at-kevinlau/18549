@@ -60,7 +60,7 @@ class Button implements Updatable, Renderable
   /*
    * Register mouse clicks/releases on this button
    */
-  void registerMClick(int mX, int mY)
+  void registerMClick(int mX, int mY, Player currentPlayer)
   {
     if (insideButton(mX, mY))
     {
@@ -68,7 +68,7 @@ class Button implements Updatable, Renderable
       onClickAction();
     }
   }
-  void registerMRelease(int mX, int mY)
+  void registerMRelease(int mX, int mY, Player currentPlayer)
   {
     // do click action if this button was originally selected
     if (selected && insideButton(mX, mY))

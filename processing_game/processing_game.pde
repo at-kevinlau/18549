@@ -79,7 +79,7 @@ void update(int mX, int mY)
   }
 }
 
-void makeMove(float x, float y)
+void makeMove(int x, int y)
 {
   if (gameOver)
   {
@@ -91,6 +91,7 @@ void makeMove(float x, float y)
     return;
   }
   
+  /*
   Player possibleWinner = board.checkWinner();
   if (possibleWinner != null)
   {
@@ -100,9 +101,12 @@ void makeMove(float x, float y)
   {
     advanceCurrentPlayer();
   }
+  */
 }
 void advanceCurrentPlayer()
 {
+  currentPlayer.originalX = currentPlayer.x;
+  currentPlayer.originalY = currentPlayer.y;
   currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
   currentPlayer = players.get(currentPlayerIndex);
 }
@@ -130,6 +134,8 @@ void renderGame()
 {
   smooth();
   background(255,255,255);
+  
+  rectMode(CORNER);
 
   for (Renderable r : renderables)
   {
@@ -183,7 +189,7 @@ void mousePressed()
   {
     for (Updatable u : updatables)
     {
-      u.registerMClick(mouseX, mouseY);
+      u.registerMClick(mouseX, mouseY, currentPlayer);
     }
   } else
   {
@@ -196,8 +202,9 @@ void mouseReleased()
   {
     for (Updatable u : updatables)
     {
-      u.registerMRelease(mouseX, mouseY);
+      u.registerMRelease(mouseX, mouseY, currentPlayer);
     }
+    makeMove(mouseX, mouseY);
   } else
   {
     resetGame();

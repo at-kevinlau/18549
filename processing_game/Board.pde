@@ -22,22 +22,33 @@ class Board implements Renderable, Updatable
   
   void render()
   {
+    rectMode(CORNER);
     stroke(0,0,0);
     fill(255,255,255);
     rect(this.x, this.y, this.w, this.h);
     
+    rectMode(CENTER);
     for (Player e : players)
     {
       stroke(e.myColor);
       rect(this.x+e.x, this.y+e.y, PLAYER_SIZE, PLAYER_SIZE);
+      fill(0,0,0,0);
+      ellipse(this.x+e.originalX, this.y+e.originalY, Player.MOVE_RANGE*2, Player.MOVE_RANGE*2);
     }
   }
   
-  boolean makeMove(float x, float y, Player currentPlayer)
+  boolean makeMove(int x, int y, Player currentPlayer)
   {
-    currentPlayer.x = x;
-    currentPlayer.y = y;
-    return true;
+    int targetX = x - this.x;
+    int targetY = y - this.y;
+    System.out.println(dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY));
+    if (dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY) <= Player.MOVE_RANGE)
+    {
+      currentPlayer.x = targetX;
+      currentPlayer.y = targetY;
+      return true;
+    }
+    return false;
   }
   
   Player checkWinner()
@@ -48,10 +59,10 @@ class Board implements Renderable, Updatable
   void update(int mX, int mY)
   {
   }
-  void registerMClick(int mX, int mY)
+  void registerMClick(int mX, int mY, Player currentPlayer)
   {
   }
-  void registerMRelease(int mX, int mY)
+  void registerMRelease(int mX, int mY, Player currentPlayer)
   {
   }
 }
