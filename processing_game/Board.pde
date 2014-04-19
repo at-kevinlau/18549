@@ -24,7 +24,7 @@ class Board implements Renderable, Updatable
   {
     rectMode(CORNER);
     stroke(0,0,0);
-    fill(255,255,255);
+    fill(50);
     rect(this.x, this.y, this.w, this.h);
     
     rectMode(CENTER);
@@ -42,7 +42,8 @@ class Board implements Renderable, Updatable
     int targetX = x - this.x;
     int targetY = y - this.y;
     System.out.println(dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY));
-    if (dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY) <= Player.MOVE_RANGE)
+    // $TODO: Move distance check to end turn
+    if (true || dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY) <= Player.MOVE_RANGE)
     {
       currentPlayer.x = targetX;
       currentPlayer.y = targetY;
