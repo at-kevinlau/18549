@@ -16,7 +16,7 @@ public class ZxingAdapterTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String qrCodeData = "BOTTOMLEFT";
+		String qrCodeData = "CalibrationTest";
 		String filePath = qrCodeData + ".png";
 		String charset = "ISO-8859-1";
 		Map<EncodeHintType, ErrorCorrectionLevel> encodeHintMap = new HashMap<EncodeHintType, ErrorCorrectionLevel>();
@@ -28,14 +28,17 @@ public class ZxingAdapterTest {
 		
 		
 		// Create a QR code image file
+		/*
 		try {
 			adapter.createQRCode(qrCodeData, filePath, charset, encodeHintMap, 200, 200);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		System.out.println("QR Code Image created successfully");
+		*/
 		
 		// Read the QR code image file
+		adapter.calibrate(filePath, 100, 100, 0, 0);
 		QRCode[] qrCodes = adapter.readMultipleQRCode(filePath);
 		for (QRCode qrCode : qrCodes) {
 			System.out.println(qrCode);
