@@ -1,19 +1,34 @@
-final int WINDOW_WIDTH = 800;
-final int WINDOW_HEIGHT = 600;
+import SimpleOpenNI.*;
+import com.example.zxingadapter.ZxingAdapter;
+import com.example.zxingadapter.QRCode;
 
+// ----- Constants -----
+final int WINDOW_WIDTH = 1920;
+final int WINDOW_HEIGHT = 1080;
+// State Constants
+final int  START_MENU = 0;
+final int  CALIBRATION = 1;
+final int  GAME = 2;
+
+// ----- Globals -----
+// System globals
+SimpleOpenNI kinect;
+int state = START_MENU;
+int offsetX, offsetY, gameWidth, gameHeight = -1;
+boolean isCalibrated = false;
+ZxingAdapter zxing;
+QRCode qrs[];
+
+// Game globals
 // All game objects that can be drawn
 ArrayList<Renderable> renderables;
 // All game objects that can be interacted with (with the mouse)
 ArrayList<Updatable> updatables;
-
 ArrayList<Player> players;
-
 Player currentPlayer;
 int currentPlayerIndex;
-
 boolean gameOver;
 Player winner;
-
 Board board;
 
 void setup()
@@ -22,6 +37,9 @@ void setup()
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
   renderables = new ArrayList<Renderable>();
   updatables = new ArrayList<Updatable>();
+  kinect = new SimpleOpenNI(this);
+  kinect.enableRGB();
+  zxing = new ZxingAdapter();
   
   /*
    * Game init
@@ -62,8 +80,61 @@ void setup()
 
 void draw()
 {
-  update(mouseX, mouseY);
-  renderGame();
+  fill(255);
+  updateQRs();
+  switch(state) {
+  case START_MENU:
+    image(kinect.rgbImage(), 0,0, width, height);
+    rect(0,0,100,100);
+    rect(width-100, height-100, 100, 100);
+    break;
+  case CALIBRATION:
+    background(0);
+    fill(0);
+    stroke(204, 102, 0);
+    strokeWeight(5);
+    if ((offsetX != -1) && (offsetY != -1) && (gameWidth == -1) && (gameHeight == -1)) {
+      ellipse(offsetX,offsetY,100, 100);
+    }
+    if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
+      translate(offsetX, offsetY);
+      rect(0,0,gameWidth,gameHeight);
+      translate(-offsetX, -offsetY);
+    }
+    break;
+  case GAME:
+    update(mouseX, mouseY);
+    if ((qrs != null) && (qrs.length > 0)) {
+      inputRelease((int)(qrs[0].getCenterX() + offsetX), (int)(qrs[0].getCenterY() + offsetY));
+    }
+    renderGame();
+    break;
+  default:
+    print("Incorrect State: " + state);
+    break;
+  }
+}
+
+void updateQRs() {
+  kinect.update();
+  kinect.rgbImage().loadPixels();
+    if (zxing != null) {
+      try {
+        QRCode newQrs[] = zxing.readMultipleQRCode(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height);
+        if ((newQrs != null) && (newQrs.length > 0)) { 
+          qrs = newQrs;
+          if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
+            if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
+              zxing.calibrate(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height, gameWidth, gameHeight);
+              isCalibrated = true;
+              print("Calibration complete!");
+            }
+          }
+        }
+      } catch (Exception ex) {
+        print("failed to read:" + ex);
+      }
+    }
 }
 
 void update(int mX, int mY)
@@ -133,7 +204,7 @@ void createBoard()
 void renderGame()
 {
   smooth();
-  background(255,255,255);
+  background(100);
   
   rectMode(CORNER);
 
@@ -185,7 +256,35 @@ void renderGame()
 
 void mousePressed()
 {
-  inputPressed(mouseX, mouseY);
+  switch(state) {
+  case START_MENU:
+    state = GAME; // TODO: $SKIPPING CALIBRATION!
+    print("State: " + state);
+    isCalibrated = false;
+    offsetX = -1;
+    offsetY = -1;
+    gameWidth = -1;
+    gameHeight = -1;
+    break;
+  case CALIBRATION:
+    if ((offsetX == -1) && (offsetY == -1)) {
+      offsetX = mouseX;
+      offsetY = mouseY;
+    } else if ((gameWidth == -1) && (gameHeight == -1)) {
+      gameWidth = mouseX - offsetX;
+      gameHeight = mouseY - offsetY;
+      print("Waiting for 3 QR Codes...");
+    } else {
+      state = GAME;
+      print("State: " + state); 
+    }
+    break;
+  case GAME:
+    inputPressed(mouseX, mouseY);
+  default:
+    print("Incorrect State: " + state);
+    break;
+  }
 }
 void mouseReleased()
 {
