@@ -138,7 +138,7 @@ public class ZxingAdapter {
 					targetHeight, offsetX, offsetY);
 		} catch (Exception e) {
 			decalibrate();
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -252,8 +252,7 @@ public class ZxingAdapter {
 					+ ")");
 
 		} catch (Exception e) {
-			e.printStackTrace();
-
+			//e.printStackTrace();
 			// Create uncalibrated reader
 			decalibrate();
 		}
@@ -295,7 +294,7 @@ public class ZxingAdapter {
 					image.getHeight(), null, 0, 1);
 			return readQRCode(pixels, image.getWidth(), image.getHeight());
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return null;
 		}
 	}
@@ -329,7 +328,7 @@ public class ZxingAdapter {
 			return readMultipleQRCode(pixels, image.getWidth(),
 					image.getHeight());
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return null;
 		}
 	}
@@ -416,7 +415,7 @@ public class ZxingAdapter {
 			return qrCodes.toArray(new QRCode[qrCodes.size()]);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 
 		// Return size 0 array if reading failed
