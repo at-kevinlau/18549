@@ -3,8 +3,8 @@ import ZxingAdapter.ZxingAdapter;
 import ZxingAdapter.QRCode;
 
 // ----- Constants -----
-final int WINDOW_WIDTH = 1920;
-final int WINDOW_HEIGHT = 1080;
+final int WINDOW_WIDTH = 1280;
+final int WINDOW_HEIGHT = 720;
 // State Constants
 final int  START_MENU = 0;
 final int  CALIBRATION = 1;
@@ -122,11 +122,14 @@ void updateQRs() {
         QRCode newQrs[] = zxing.readMultipleQRCode(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height);
         if ((newQrs != null) && (newQrs.length > 0)) { 
           qrs = newQrs;
+          for (QRCode qr:newQrs){print(qr);} print("\n");
           if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
             if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
               zxing.calibrate(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height, gameWidth, gameHeight, offsetX, offsetY);
               isCalibrated = true;
               print("Calibration complete!");
+              state = GAME;
+              print("State: " + state);
             }
             if ((!isCalibrated) && (qrs.length < 3)) {
               print(qrs.length + " qr codes$");
