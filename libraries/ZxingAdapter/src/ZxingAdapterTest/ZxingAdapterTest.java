@@ -38,7 +38,7 @@ public class ZxingAdapterTest {
 		*/
 		
 		// Read the QR code image file
-		adapter.calibrate(filePath, 100, 100, 10, 10);
+		adapter.calibrate(filePath, 100, 100, 0, 0);
 		QRCode[] qrCodes = adapter.readMultipleQRCode(filePath);
 		for (QRCode qrCode : qrCodes) {
 			System.out.println(qrCode);

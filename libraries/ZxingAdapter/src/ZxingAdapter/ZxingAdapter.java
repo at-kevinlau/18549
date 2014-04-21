@@ -138,7 +138,7 @@ public class ZxingAdapter {
 					targetHeight, offsetX, offsetY);
 		} catch (Exception e) {
 			decalibrate();
-			// e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -185,15 +185,18 @@ public class ZxingAdapter {
 			for (Result result : results) {
 				if (result.getText().equals(TOPLEFT)) {
 					topLeftFound = true;
-					topLeftX = result.getResultPoints()[1].getX();
+					topLeftX = reflect(result.getResultPoints()[1].getX(),
+							width);
 					topLeftY = result.getResultPoints()[1].getY();
 				} else if (result.getText().equals(TOPRIGHT)) {
 					topRightFound = true;
-					topRightX = result.getResultPoints()[2].getX();
+					topRightX = reflect(result.getResultPoints()[2].getX(),
+							width);
 					topRightY = result.getResultPoints()[2].getY();
 				} else if (result.getText().equals(BOTTOMLEFT)) {
 					bottomLeftFound = true;
-					bottomLeftX = result.getResultPoints()[0].getX();
+					bottomLeftX = reflect(result.getResultPoints()[0].getX(),
+							width);
 					bottomLeftY = result.getResultPoints()[0].getY();
 				}
 			}
@@ -249,7 +252,7 @@ public class ZxingAdapter {
 					+ ")");
 
 		} catch (Exception e) {
-			// e.printStackTrace();
+			//e.printStackTrace();
 			// Create uncalibrated reader
 			decalibrate();
 		}
@@ -291,7 +294,7 @@ public class ZxingAdapter {
 					image.getHeight(), null, 0, 1);
 			return readQRCode(pixels, image.getWidth(), image.getHeight());
 		} catch (Exception e) {
-			// e.printStackTrace();
+			//e.printStackTrace();
 			return null;
 		}
 	}
@@ -325,7 +328,7 @@ public class ZxingAdapter {
 			return readMultipleQRCode(pixels, image.getWidth(),
 					image.getHeight());
 		} catch (Exception e) {
-			// e.printStackTrace();
+			//e.printStackTrace();
 			return null;
 		}
 	}
@@ -375,8 +378,8 @@ public class ZxingAdapter {
 				if (!readOutOfBounds) {
 					// If point is outside calibration area, skip
 					for (ResultPoint point : results[i].getResultPoints()) {
-						if (point.getX() < sourceXMin
-								|| point.getX() > sourceXMax
+						if (reflect(point.getX(), width) < sourceXMin
+								|| reflect(point.getX(), width) > sourceXMax
 								|| point.getY() < sourceYMin
 								|| point.getY() > sourceYMax) {
 							continue readerLoop;
@@ -385,11 +388,14 @@ public class ZxingAdapter {
 				}
 
 				// Get source (x,y) position
-				sourceTopLeftX = results[i].getResultPoints()[1].getX();
+				sourceTopLeftX = reflect(
+						results[i].getResultPoints()[1].getX(), width);
 				sourceTopLeftY = results[i].getResultPoints()[1].getY();
-				sourceTopRightX = results[i].getResultPoints()[2].getX();
+				sourceTopRightX = reflect(
+						results[i].getResultPoints()[2].getX(), width);
 				sourceTopRightY = results[i].getResultPoints()[2].getY();
-				sourceBottomLeftX = results[i].getResultPoints()[0].getX();
+				sourceBottomLeftX = reflect(
+						results[i].getResultPoints()[0].getX(), width);
 				sourceBottomLeftY = results[i].getResultPoints()[0].getY();
 
 				// Get scaled (x,y) position and angle
@@ -409,7 +415,7 @@ public class ZxingAdapter {
 			return qrCodes.toArray(new QRCode[qrCodes.size()]);
 
 		} catch (Exception e) {
-			// e.printStackTrace();
+			//e.printStackTrace();
 		}
 
 		// Return size 0 array if reading failed
@@ -493,5 +499,9 @@ public class ZxingAdapter {
 		targetPoint[1] = rotatedPointY * calibrationRatioY + offsetY;
 
 		return targetPoint;
+	}
+
+	private float reflect(float x, int width) {
+		return width - x;
 	}
 }
