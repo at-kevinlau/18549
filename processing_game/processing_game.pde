@@ -1,10 +1,10 @@
 import SimpleOpenNI.*;
-import com.example.zxingadapter.ZxingAdapter;
-import com.example.zxingadapter.QRCode;
+import ZxingAdapter.ZxingAdapter;
+import ZxingAdapter.QRCode;
 
 // ----- Constants -----
-final int WINDOW_WIDTH = 1920;
-final int WINDOW_HEIGHT = 1080;
+final int WINDOW_WIDTH = 1280;
+final int WINDOW_HEIGHT = 720;
 // State Constants
 final int  START_MENU = 0;
 final int  CALIBRATION = 1;
@@ -84,9 +84,8 @@ void draw()
   updateQRs();
   switch(state) {
   case START_MENU:
-    image(kinect.rgbImage(), 0,0, width, height);
-    rect(0,0,100,100);
-    rect(width-100, height-100, 100, 100);
+    scale(-1.0, 1.0);
+    image(kinect.rgbImage(), -width,0, width, height);
     break;
   case CALIBRATION:
     background(0);
@@ -105,7 +104,7 @@ void draw()
   case GAME:
     update(mouseX, mouseY);
     if ((qrs != null) && (qrs.length > 0)) {
-      inputRelease((int)(qrs[0].getCenterX() + offsetX), (int)(qrs[0].getCenterY() + offsetY));
+      inputRelease((int)(qrs[0].getCenterX()), (int)(qrs[0].getCenterY()));
     }
     renderGame();
     break;
@@ -123,11 +122,17 @@ void updateQRs() {
         QRCode newQrs[] = zxing.readMultipleQRCode(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height);
         if ((newQrs != null) && (newQrs.length > 0)) { 
           qrs = newQrs;
+          for (QRCode qr:newQrs){print(qr);} print("\n");
           if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
             if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
-              zxing.calibrate(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height, gameWidth, gameHeight);
+              zxing.calibrate(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height, gameWidth, gameHeight, offsetX, offsetY);
               isCalibrated = true;
               print("Calibration complete!");
+              state = GAME;
+              print("State: " + state);
+            }
+            if ((!isCalibrated) && (qrs.length < 3)) {
+              print(qrs.length + " qr codes$");
             }
           }
         }
@@ -258,7 +263,7 @@ void mousePressed()
 {
   switch(state) {
   case START_MENU:
-    state = GAME; // TODO: $SKIPPING CALIBRATION!
+    state = CALIBRATION;
     print("State: " + state);
     isCalibrated = false;
     offsetX = -1;

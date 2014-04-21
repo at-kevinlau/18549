@@ -41,7 +41,7 @@ class Board implements Renderable, Updatable
   {
     int targetX = x - this.x;
     int targetY = y - this.y;
-    System.out.println(dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY));
+    //System.out.println(dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY));
     // $TODO: Move distance check to end turn
     if (true || dist(currentPlayer.originalX, currentPlayer.originalY, targetX, targetY) <= Player.MOVE_RANGE)
     {
