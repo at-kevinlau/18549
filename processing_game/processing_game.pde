@@ -86,8 +86,7 @@ void draw()
   updateQRs();
   switch(state) {
   case START_MENU:
-    scale(-1.0, 1.0);
-    image(kinect.getVideoImage(), -width,0, width, height);
+    image(kinect.getVideoImage(), 0,0, width, height);
     break;
   case CALIBRATION:
     background(0);
