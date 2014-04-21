@@ -4,8 +4,8 @@ import ZxingAdapter.ZxingAdapter;
 import ZxingAdapter.QRCode;
 
 // ----- Constants -----
-final int WINDOW_WIDTH = 1280;
-final int WINDOW_HEIGHT = 720;
+final int WINDOW_WIDTH = 640;
+final int WINDOW_HEIGHT = 480;
 // State Constants
 final int  START_MENU = 0;
 final int  CALIBRATION = 1;
@@ -86,7 +86,8 @@ void draw()
   updateQRs();
   switch(state) {
   case START_MENU:
-    image(kinect.getVideoImage(), 0,0, width, height);
+    scale(-1.0, 1.0);
+    image(kinect.getVideoImage(), -width,0, width, height);
     break;
   case CALIBRATION:
     background(0);
