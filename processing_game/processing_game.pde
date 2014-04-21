@@ -1,4 +1,5 @@
-import SimpleOpenNI.*;
+import org.openkinect.*;
+import org.openkinect.processing.*;
 import ZxingAdapter.ZxingAdapter;
 import ZxingAdapter.QRCode;
 
@@ -12,7 +13,7 @@ final int  GAME = 2;
 
 // ----- Globals -----
 // System globals
-SimpleOpenNI kinect;
+Kinect kinect;
 int state = START_MENU;
 int offsetX, offsetY, gameWidth, gameHeight = -1;
 boolean isCalibrated = false;
@@ -37,8 +38,9 @@ void setup()
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
   renderables = new ArrayList<Renderable>();
   updatables = new ArrayList<Updatable>();
-  kinect = new SimpleOpenNI(this);
-  kinect.enableRGB();
+  kinect = new Kinect(this);
+  kinect.start();
+  kinect.enableRGB(true);
   zxing = new ZxingAdapter();
   
   /*
@@ -85,7 +87,7 @@ void draw()
   switch(state) {
   case START_MENU:
     scale(-1.0, 1.0);
-    image(kinect.rgbImage(), -width,0, width, height);
+    image(kinect.getVideoImage(), -width,0, width, height);
     break;
   case CALIBRATION:
     background(0);
@@ -115,17 +117,16 @@ void draw()
 }
 
 void updateQRs() {
-  kinect.update();
-  kinect.rgbImage().loadPixels();
+  kinect.getVideoImage().loadPixels();
     if (zxing != null) {
       try {
-        QRCode newQrs[] = zxing.readMultipleQRCode(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height);
+        QRCode newQrs[] = zxing.readMultipleQRCode(kinect.getVideoImage().pixels, kinect.getVideoImage().width, kinect.getVideoImage().height);
         if ((newQrs != null) && (newQrs.length > 0)) { 
           qrs = newQrs;
           for (QRCode qr:newQrs){print(qr);} print("\n");
           if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
             if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
-              zxing.calibrate(kinect.rgbImage().pixels, kinect.rgbImage().width, kinect.rgbImage().height, gameWidth, gameHeight, offsetX, offsetY);
+              zxing.calibrate(kinect.getVideoImage().pixels, kinect.getVideoImage().width, kinect.getVideoImage().height, gameWidth, gameHeight, offsetX, offsetY);
               isCalibrated = true;
               print("Calibration complete!");
               state = GAME;
