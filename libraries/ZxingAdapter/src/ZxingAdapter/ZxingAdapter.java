@@ -121,6 +121,61 @@ public class ZxingAdapter {
 	}
 
 	/**
+	 * Calibrates reader from given coordinates
+	 * 
+	 * @param topLeftX
+	 * @param topLeftY
+	 * @param topRightX
+	 * @param topRightY
+	 * @param bottomLeftX
+	 * @param bottomRightY
+	 * @param targetWidth
+	 * @param targetHeight
+	 * @param offsetX
+	 * @param offsetY
+	 */
+	public void calibrate(float topLeftX, float topLeftY, float topRightX,
+			float topRightY, float bottomLeftX, float bottomLeftY,
+			int targetWidth, int targetHeight, float offsetX, float offsetY) {
+
+		float sourceWidth;
+		float sourceHeight;
+
+		// Determine source boundaries based on calibration points
+		sourceXMin = Math.min(Math.min(topLeftX, topRightX), bottomLeftX);
+		sourceXMax = Math.max(Math.max(topLeftX, topRightX), bottomLeftX);
+		sourceYMin = Math.min(Math.min(topLeftY, topRightY), bottomLeftY);
+		sourceYMax = Math.max(Math.max(topLeftY, topRightY), bottomLeftY);
+
+		// Determine origin
+		sourceOriginX = topLeftX;
+		sourceOriginY = topLeftY;
+
+		// Determine scaling ratios
+		sourceWidth = (float) Math.sqrt(Math.pow((topLeftX - topRightX), 2)
+				+ Math.pow((topLeftY - topRightY), 2));
+		sourceHeight = (float) Math.sqrt(Math.pow((topLeftX - bottomLeftX), 2)
+				+ Math.pow((topLeftY - bottomLeftY), 2));
+		calibrationRatioX = targetWidth / sourceWidth;
+		calibrationRatioY = targetHeight / sourceHeight;
+
+		// Determine rotation angle
+		calibrationAngle = (float) (Math.atan2(topRightY - topLeftY, topRightX
+				- topLeftX));
+
+		// Set offsets
+		this.offsetX = offsetX;
+		this.offsetY = offsetY;
+
+		System.out.println("System calibrated - Origin@(" + sourceOriginX + ","
+				+ sourceOriginY + "), XRatio:" + calibrationRatioX
+				+ ", YRatio: " + calibrationRatioY + ", Angle:"
+				+ calibrationAngle + ", Offset:(" + offsetX + "," + offsetY
+				+ ")");
+
+	}
+
+	/**
 	 * Calibrates reader from image file
 	 * 
 	 * @param filePath
@@ -138,7 +193,7 @@ public class ZxingAdapter {
 					targetHeight, offsetX, offsetY);
 		} catch (Exception e) {
 			decalibrate();
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 
@@ -164,9 +219,6 @@ public class ZxingAdapter {
 		float topRightY = 0;
 		float bottomLeftX = 0;
 		float bottomLeftY = 0;
-
-		float sourceWidth;
-		float sourceHeight;
 
 		// Initialize hintMap
 		Map<DecodeHintType, Object> decodeHintMap = setupHintMap();
@@ -219,40 +271,11 @@ public class ZxingAdapter {
 				return;
 			}
 
-			// Determine source boundaries based on calibration points
-			sourceXMin = Math.min(Math.min(topLeftX, topRightX), bottomLeftX);
-			sourceXMax = Math.max(Math.max(topLeftX, topRightX), bottomLeftX);
-			sourceYMin = Math.min(Math.min(topLeftY, topRightY), bottomLeftY);
-			sourceYMax = Math.max(Math.max(topLeftY, topRightY), bottomLeftY);
-
-			// Determine origin
-			sourceOriginX = topLeftX;
-			sourceOriginY = topLeftY;
-
-			// Determine scaling ratios
-			sourceWidth = (float) Math.sqrt(Math.pow((topLeftX - topRightX), 2)
-					+ Math.pow((topLeftY - topRightY), 2));
-			sourceHeight = (float) Math.sqrt(Math.pow((topLeftX - bottomLeftX),
-					2) + Math.pow((topLeftY - bottomLeftY), 2));
-			calibrationRatioX = targetWidth / sourceWidth;
-			calibrationRatioY = targetHeight / sourceHeight;
-
-			// Determine rotation angle
-			calibrationAngle = (float) (Math.atan2(topRightY - topLeftY,
-					topRightX - topLeftX));
-
-			// Set offsets
-			this.offsetX = offsetX;
-			this.offsetY = offsetY;
-
-			System.out.println("System calibrated - Origin@(" + sourceOriginX
-					+ "," + sourceOriginY + "), XRatio:" + calibrationRatioX
-					+ ", YRatio: " + calibrationRatioY + ", Angle:"
-					+ calibrationAngle + ", Offset:(" + offsetX + "," + offsetY
-					+ ")");
+			calibrate(topLeftX, topLeftY, topRightX, topRightY, bottomLeftX,
+					bottomLeftY, targetWidth, targetHeight, offsetX, offsetY);
 
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			// Create uncalibrated reader
 			decalibrate();
 		}
@@ -294,7 +317,7 @@ public class ZxingAdapter {
 					image.getHeight(), null, 0, 1);
 			return readQRCode(pixels, image.getWidth(), image.getHeight());
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return null;
 		}
 	}
@@ -328,7 +351,7 @@ public class ZxingAdapter {
 			return readMultipleQRCode(pixels, image.getWidth(),
 					image.getHeight());
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return null;
 		}
 	}
@@ -415,7 +438,7 @@ public class ZxingAdapter {
 			return qrCodes.toArray(new QRCode[qrCodes.size()]);
 
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 		// Return size 0 array if reading failed
