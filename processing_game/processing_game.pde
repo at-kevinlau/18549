@@ -16,6 +16,8 @@ final int  GAME = 2;
 Kinect kinect;
 int state = START_MENU;
 int offsetX, offsetY, gameWidth, gameHeight = -1;
+float[] calibrationPoints = new float[10];
+int calibrationPointsIdx = 0;
 boolean isCalibrated = false;
 ZxingAdapter zxing;
 QRCode qrs[];
@@ -124,18 +126,6 @@ void updateQRs() {
         if ((newQrs != null) && (newQrs.length > 0)) { 
           qrs = newQrs;
           for (QRCode qr:newQrs){print(qr);} print("\n");
-          if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
-            if ((!isCalibrated) && (qrs.length == 3) && (!qrs[0].getText().equals(qrs[1].getText())) && (!qrs[1].getText().equals(qrs[2].getText()))) {
-              zxing.calibrate(kinect.getVideoImage().pixels, kinect.getVideoImage().width, kinect.getVideoImage().height, gameWidth, gameHeight, offsetX, offsetY);
-              isCalibrated = true;
-              print("Calibration complete!");
-              state = GAME;
-              print("State: " + state);
-            }
-            if ((!isCalibrated) && (qrs.length < 3)) {
-              print(qrs.length + " qr codes$");
-            }
-          }
         }
       } catch (Exception ex) {
         print("failed to read:" + ex);
@@ -279,10 +269,25 @@ void mousePressed()
     } else if ((gameWidth == -1) && (gameHeight == -1)) {
       gameWidth = mouseX - offsetX;
       gameHeight = mouseY - offsetY;
-      print("Waiting for 3 QR Codes...");
-    } else {
+      print("Waiting for 3 calibration points...");
+    } else if (calibrationPointsIdx == 6) {
+      float[] cal = new float[6];
+      for (int i = 0; i < 6; i++) {
+        if (i%2 == 0) {
+          cal[i] = calibrationPoints[i]/height*kinect.getVideoImage().width;
+        } else {
+          cal[i] = calibrationPoints[i]/height*kinect.getVideoImage().height;
+        }
+      }
+      print(cal);//$
+      zxing.calibrate(cal[0], cal[1], cal[2], cal[3], cal[4], cal[5], gameWidth, gameHeight, offsetX, offsetY);
+      print("Calibration complete!");
       state = GAME;
       print("State: " + state); 
+    } else {
+      calibrationPoints[calibrationPointsIdx] = mouseX;
+      calibrationPoints[calibrationPointsIdx+1] = mouseY;
+      calibrationPointsIdx += 2;
     }
     break;
   case GAME:
