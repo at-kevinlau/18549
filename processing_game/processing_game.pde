@@ -107,6 +107,7 @@ void draw()
       image(tempImage, -width,0, width, height);
       scale(-1.0, 1.0);
       translate(offsetX, offsetY);
+      fill(0,0);
       rect(0,0,gameWidth,gameHeight);
       translate(-offsetX, -offsetY);
     }
