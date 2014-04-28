@@ -100,6 +100,12 @@ void draw()
       ellipse(offsetX,offsetY,100, 100);
     }
     if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
+      
+      scale(-1.0, 1.0);
+      PImage tempImage = kinect.getVideoImage();
+      tempImage.filter(GRAY);
+      image(tempImage, -width,0, width, height);
+      scale(-1.0, 1.0);
       translate(offsetX, offsetY);
       rect(0,0,gameWidth,gameHeight);
       translate(-offsetX, -offsetY);
