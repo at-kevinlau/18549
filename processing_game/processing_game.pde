@@ -92,7 +92,7 @@ void draw()
     image(kinect.getVideoImage(), -width,0, width, height);
     break;
   case CALIBRATION:
-    background(0);
+    background(0); 
     fill(0);
     stroke(204, 102, 0);
     strokeWeight(5);
@@ -281,7 +281,7 @@ void mousePressed()
       float[] cal = new float[6];
       for (int i = 0; i < 6; i++) {
         if (i%2 == 0) {
-          cal[i] = calibrationPoints[i]/height*kinect.getVideoImage().width;
+          cal[i] = calibrationPoints[i]/width*kinect.getVideoImage().width;
         } else {
           cal[i] = calibrationPoints[i]/height*kinect.getVideoImage().height;
         }
