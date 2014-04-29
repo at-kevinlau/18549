@@ -1,3 +1,7 @@
+import gab.opencv.*;
+import org.opencv.core.*;
+import org.opencv.imgproc.Imgproc;
+
 // Daniel Shiffman
 // Tracking the average location beyond a given depth threshold
 // Thanks to Dan O'Sullivan
@@ -120,7 +124,64 @@ void keyPressed() {
     currentlySelectedCalib = 2;
   } else if (key == '3') {
     currentlySelectedCalib = 3;
+  } else if (key == ' ') {
+    System.out.println("Mouse game coordinates: " + screenXYtoGameXY(mouseX,mouseY));
   }
+}
+
+Point toPoint(PVector in) {
+ return new Point(in.x, in.y); 
+}
+
+PVector screenXYtoGameXY(int scrX, int scrY)
+{
+  int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
+  PVector bottomRight = new PVector(topRight.x + bottomExtraWidth, bottomLeft.y);
+  
+  Point[] src = new Point[4];
+  src[0] = toPoint(topLeft);
+  src[1] = toPoint(topRight);
+  src[2] = toPoint(bottomRight);
+  src[3] = toPoint(bottomLeft);
+  
+  Point[] dst = new Point[4];
+  dst[0] = new Point(0.0,0.0);
+  dst[1] = new Point(1.0,0.0);
+  dst[2] = new Point(1.0,1.0);
+  dst[3] = new Point(0.0,1.0);
+  
+  MatOfPoint2f srcMat = new MatOfPoint2f();
+  MatOfPoint2f dstMat = new MatOfPoint2f();
+  srcMat.fromArray(src);
+  dstMat.fromArray(dst);
+  
+  Mat warpMatrix = Imgproc.getPerspectiveTransform(srcMat,dstMat);
+  
+  Mat warp = warpMatrix;
+  
+  Point warped_point = new Point(scrX, scrY);
+  ArrayList<Point> singlePoint = new ArrayList<Point>();
+  singlePoint.add(warped_point);
+  MatOfPoint2f singleWarped = new MatOfPoint2f();
+  singleWarped.fromList(singlePoint);
+  
+  MatOfPoint2f endPoint = new MatOfPoint2f();
+  endPoint.fromList(singlePoint);
+  
+  
+  Core.perspectiveTransform(singleWarped, endPoint, warpMatrix);
+  
+  int[] empty = new int[1];
+  
+  return new PVector(endPoint.get(0,0,empty), endPoint.get(1,0,empty));
+  
+  /*
+  Mat homogeneousMat = warp.inv().mul(singleWarped);
+  Point3 homogeneous = new Point3(homogeneousMat.get(0,0),homogeneousMat.get(1,0),homogeneousMat.get(2,0)); 
+  Point result = new Point(homogeneous.x, homogeneous.y);  // Drop the z=1 to get out of homogeneous coordinates
+  // now, result == srcQuad[3], which is what you wanted
+  */
+
 }
 
 void stop() {
