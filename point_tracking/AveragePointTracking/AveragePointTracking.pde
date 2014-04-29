@@ -57,6 +57,12 @@ void draw() {
   fill (50,100,250,200);
   ellipse(bottomLeft.x,bottomLeft.y,20,20);
 
+  fill (128,128,128,128);
+  int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
+  quad (topLeft.x, topLeft.y,
+        topRight.x, topRight.y,
+        bottomLeft.x, bottomLeft.y,
+        topRight.x + bottomExtraWidth, bottomLeft.y);
 
   // Display some info
   int t = tracker.getThreshold();
