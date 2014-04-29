@@ -12,13 +12,16 @@ KinectTracker tracker;
 // Kinect Library object
 Kinect kinect;
 
-final int WIDTH = 640;
-final int HEIGHT = 520;
+final int WIDTH = 600;
+final int HEIGHT = 400;
 
 // calibration points
 PVector topLeft = new PVector(0,0);
 PVector topRight = new PVector(WIDTH,0);
 PVector bottomLeft = new PVector(0,HEIGHT);
+
+// 1 = topLeft, 2 = topRight, 3 = bottomLeft
+int currentlySelectedCalib = 1;
 
 void setup() {
   size(WIDTH,HEIGHT);
@@ -47,8 +50,11 @@ void draw() {
   ellipse(v2.x,v2.y,20,20);
 
   // Show calibration points
+  fill (250,50,100,200);
   ellipse(topLeft.x, topLeft.y,20,20);
+  fill (100,250,50,200);
   ellipse(topRight.x,topRight.y,20,20);
+  fill (50,100,250,200);
   ellipse(bottomLeft.x,bottomLeft.y,20,20);
 
 
@@ -63,6 +69,16 @@ void draw() {
        "UP, DOWN to move threshold, LEFT, RIGHT to increase range,\n" + 
        "CONTROL, ALT to change angle",0,30);
   
+}
+
+void mousePressed() {
+ if (currentlySelectedCalib == 1) {
+   topLeft = new PVector(mouseX, mouseY);
+ } else if (currentlySelectedCalib == 2) {
+   topRight = new PVector(mouseX, mouseY);
+ } else if (currentlySelectedCalib == 3) {
+   bottomLeft = new PVector(mouseX, mouseY);
+ } 
 }
 
 void keyPressed() {
@@ -89,6 +105,13 @@ void keyPressed() {
       pF-=.01;
       tracker.setPerspOffsetFactor(pF);
     }
+  }
+  if (key == '1') {
+    currentlySelectedCalib = 1;
+  } else if (key == '2') {
+    currentlySelectedCalib = 2;
+  } else if (key == '3') {
+    currentlySelectedCalib = 3;
   }
 }
 
