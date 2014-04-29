@@ -45,7 +45,7 @@ void draw() {
 
   // Let's draw the "lerped" location
   PVector v2 = tracker.getLerpedPos();
-  fill(100,250,50,200);
+  fill(100,250,50,50);
   noStroke();
   ellipse(v2.x,v2.y,20,20);
 
@@ -74,8 +74,10 @@ void draw() {
 void mousePressed() {
  if (currentlySelectedCalib == 1) {
    topLeft = new PVector(mouseX, mouseY);
+   topRight = new PVector(topRight.x, topLeft.y);
  } else if (currentlySelectedCalib == 2) {
    topRight = new PVector(mouseX, mouseY);
+   topLeft = new PVector(topLeft.x, topRight.y);
  } else if (currentlySelectedCalib == 3) {
    bottomLeft = new PVector(mouseX, mouseY);
  } 
