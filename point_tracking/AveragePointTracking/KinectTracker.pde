@@ -3,8 +3,9 @@ class KinectTracker {
   // Size of kinect image
   int kw = 640;
   int kh = 480;
-  int threshold = 745;
-  int thresholdBuffer = 50;
+  int threshold = 779;
+  int thresholdBuffer = 10;
+  float perspOffsetFactor = .48;
 
   // Raw location
   PVector loc;
@@ -52,7 +53,7 @@ class KinectTracker {
         int rawDepth = depth[offset];
 
         // Testing against threshold
-        if (rawDepth < threshold) {
+        if (inThreshold(rawDepth)) {
           sumX += x;
           sumY += y;
           count++;
@@ -90,11 +91,11 @@ class KinectTracker {
       for(int y = 0; y < kh; y++) {
         // mirroring image
         int offset = kw-x-1+y*kw;
-        // Raw depth
-        int rawDepth = depth[offset];
+        // Raw depth (use constant to offset perspective)
+        int rawDepth = depth[offset] + (int)(y*perspOffsetFactor);
 
         int pix = x+y*display.width;
-        if (rawDepth < threshold && rawDepth + thresholdBuffer > threshold) {
+        if (inThreshold(rawDepth)) {
           // A red color instead
           display.pixels[pix] = color(150,50,50);
         } 
@@ -107,6 +108,10 @@ class KinectTracker {
 
     // Draw the image
     image(display,0,0);
+  }
+  
+  boolean inThreshold(int thr) {
+    return thr < threshold && (thr + thresholdBuffer) > threshold;
   }
 
   void quit() {
@@ -128,6 +133,14 @@ class KinectTracker {
 
   void setThresholdBuffer(int t) {
     thresholdBuffer =  t;
+  }
+  
+  float getPerspOffsetFactor() {
+    return perspOffsetFactor;
+  }
+
+  void setPerspOffsetFactor(float t) {
+    perspOffsetFactor =  t;
   }
 }
 

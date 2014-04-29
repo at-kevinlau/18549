@@ -40,26 +40,40 @@ void draw() {
 
   // Display some info
   int t = tracker.getThreshold();
-  fill(0);
-  text("threshold: " + t + "    " +  "framerate: " + (int)frameRate + "    " + "UP increase threshold, DOWN decrease threshold",10,500);
+  int tBuf = tracker.getThresholdBuffer();
+  float pF = tracker.getPerspOffsetFactor();
+  fill(255);
+  text("threshold: " + t + "    " +  "framerate: " + (int)frameRate + "\n" +
+       "threshold range: " + tBuf + "\n" +
+       "perspective offset factor: " + pF + "\n" + 
+       "UP, DOWN to move threshold, LEFT, RIGHT to increase range,\n" + 
+       "CONTROL, ALT to change angle",0,30);
+  
 }
 
 void keyPressed() {
   int t = tracker.getThreshold();
   int tBuf = tracker.getThresholdBuffer();
+  float pF = tracker.getPerspOffsetFactor();
   if (key == CODED) {
     if (keyCode == UP) {
-      t+=5;
+      t+=1;
       tracker.setThreshold(t);
     } else if (keyCode == DOWN) {
-      t-=5;
+      t-=1;
       tracker.setThreshold(t);
     } else if (keyCode == LEFT) {
-      tBuf-=5;
+      tBuf-=1;
       tracker.setThresholdBuffer(tBuf);
     } else if (keyCode == RIGHT) {
-      tBuf+=5;
+      tBuf+=1;
       tracker.setThresholdBuffer(tBuf);
+    } else if (keyCode == ALT) {
+      pF+=.01;
+      tracker.setPerspOffsetFactor(pF);
+    } else if (keyCode == CONTROL) {
+      pF-=.01;
+      tracker.setPerspOffsetFactor(pF);
     }
   }
 }
