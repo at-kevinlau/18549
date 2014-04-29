@@ -1,12 +1,12 @@
-import gab.opencv.*;
-import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
-
 // Daniel Shiffman
 // Tracking the average location beyond a given depth threshold
 // Thanks to Dan O'Sullivan
 // http://www.shiffman.net
 // https://github.com/shiffman/libfreenect/tree/master/wrappers/java/processing
+
+import javax.media.jai.PerspectiveTransform;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 
 import org.openkinect.*;
 import org.openkinect.processing.*;
@@ -129,8 +129,8 @@ void keyPressed() {
   }
 }
 
-Point toPoint(PVector in) {
- return new Point(in.x, in.y); 
+Point toPoint(PVector p) {
+  return new Point((int)p.x, (int)p.y);  
 }
 
 PVector screenXYtoGameXY(int scrX, int scrY)
@@ -145,43 +145,21 @@ PVector screenXYtoGameXY(int scrX, int scrY)
   src[3] = toPoint(bottomLeft);
   
   Point[] dst = new Point[4];
-  dst[0] = new Point(0.0,0.0);
-  dst[1] = new Point(1.0,0.0);
-  dst[2] = new Point(1.0,1.0);
-  dst[3] = new Point(0.0,1.0);
+  dst[0] = new Point(0,0);
+  dst[1] = new Point(1000,0);
+  dst[2] = new Point(1000,1000);
+  dst[3] = new Point(0,1000);
   
-  MatOfPoint2f srcMat = new MatOfPoint2f();
-  MatOfPoint2f dstMat = new MatOfPoint2f();
-  srcMat.fromArray(src);
-  dstMat.fromArray(dst);
-  
-  Mat warpMatrix = Imgproc.getPerspectiveTransform(srcMat,dstMat);
-  
-  Mat warp = warpMatrix;
-  
-  Point warped_point = new Point(scrX, scrY);
-  ArrayList<Point> singlePoint = new ArrayList<Point>();
-  singlePoint.add(warped_point);
-  MatOfPoint2f singleWarped = new MatOfPoint2f();
-  singleWarped.fromList(singlePoint);
-  
-  MatOfPoint2f endPoint = new MatOfPoint2f();
-  endPoint.fromList(singlePoint);
-  
-  
-  Core.perspectiveTransform(singleWarped, endPoint, warpMatrix);
-  
-  int[] empty = new int[1];
-  
-  return new PVector(endPoint.get(0,0,empty), endPoint.get(1,0,empty));
-  
-  /*
-  Mat homogeneousMat = warp.inv().mul(singleWarped);
-  Point3 homogeneous = new Point3(homogeneousMat.get(0,0),homogeneousMat.get(1,0),homogeneousMat.get(2,0)); 
-  Point result = new Point(homogeneous.x, homogeneous.y);  // Drop the z=1 to get out of homogeneous coordinates
-  // now, result == srcQuad[3], which is what you wanted
-  */
-
+  PerspectiveTransform trans = PerspectiveTransform.getQuadToQuad(src[0].x, src[0].y,
+                                                                  src[1].x, src[1].y,
+                                                                  src[2].x, src[2].y,
+                                                                  src[3].x, src[3].y,
+                                                                  dst[0].x, dst[0].y,
+                                                                  dst[1].x, dst[1].y,
+                                                                  dst[2].x, dst[2].y,
+                                                                  dst[3].x, dst[3].y);
+  Point2D result = trans.transform(new Point(scrX, scrY), null);
+  return new PVector((float)result.getX(), (float)result.getY());
 }
 
 void stop() {
