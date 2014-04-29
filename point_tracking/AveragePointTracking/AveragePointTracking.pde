@@ -12,8 +12,16 @@ KinectTracker tracker;
 // Kinect Library object
 Kinect kinect;
 
+final int WIDTH = 640;
+final int HEIGHT = 520;
+
+// calibration points
+PVector topLeft = new PVector(0,0);
+PVector topRight = new PVector(WIDTH,0);
+PVector bottomLeft = new PVector(0,HEIGHT);
+
 void setup() {
-  size(640,520);
+  size(WIDTH,HEIGHT);
   kinect = new Kinect(this);
   tracker = new KinectTracker();
 }
@@ -37,6 +45,12 @@ void draw() {
   fill(100,250,50,200);
   noStroke();
   ellipse(v2.x,v2.y,20,20);
+
+  // Show calibration points
+  ellipse(topLeft.x, topLeft.y,20,20);
+  ellipse(topRight.x,topRight.y,20,20);
+  ellipse(bottomLeft.x,bottomLeft.y,20,20);
+
 
   // Display some info
   int t = tracker.getThreshold();
