@@ -61,8 +61,8 @@ void draw() {
   int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
   quad (topLeft.x, topLeft.y,
         topRight.x, topRight.y,
-        bottomLeft.x, bottomLeft.y,
-        topRight.x + bottomExtraWidth, bottomLeft.y);
+        topRight.x + bottomExtraWidth, bottomLeft.y,
+        bottomLeft.x, bottomLeft.y);
 
   // Display some info
   int t = tracker.getThreshold();
