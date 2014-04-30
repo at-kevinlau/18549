@@ -73,14 +73,14 @@ class ComponentFinder
       {
         if(L[pos] == 0) // Only process unlabeled pixels
         {
-          if (((I.pixels[pos]&0xffffff) == 0xffffff))
+          if (((I.pixels[pos]&0xffffff) != 0x000000))
           {
             // White pixel
             L[pos] = -1;
           }
-          else if (((I.pixels[pos]&0xffffff) != 0xffffff))
+          else if (((I.pixels[pos]&0xffffff) == 0x000000))
           {
-            if(pos-I.width > 0 && (I.pixels[pos-I.width]&0xffffff) == 0xffffff)
+            if(pos-I.width > 0 && (I.pixels[pos-I.width]&0xffffff) != 0x000000)
             {
               // If the pixel above is a white pixel,
               // then this is the start of an outer contour
@@ -90,7 +90,7 @@ class ComponentFinder
               C++;
             }
             if (pos+I.width < I.pixels.length &&
-                ((I.pixels[pos+I.width]&0xffffff) == 0xffffff) && (L[pos+I.width] == 0))
+                ((I.pixels[pos+I.width]&0xffffff) != 0x000000) && (L[pos+I.width] == 0))
             {
               // If the pixel below is a white pixel, then it is the start of an
               // inner contour, and we get the id for the outer contour
