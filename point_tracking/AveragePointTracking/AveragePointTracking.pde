@@ -48,7 +48,9 @@ void draw() {
     tracker.display(img, depth);
     image(tracker.display,0,0);
   } else {
+    scale(-1.0,1.0);
     image(img, 0, 0);
+    scale(1.0,1.0);
   }
 
   // Let's draw the raw location
