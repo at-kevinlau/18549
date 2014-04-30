@@ -64,7 +64,7 @@ void draw() {
     fill(0,0,0,255);
     buffer.rect(0,0,WIDTH,HEIGHT);
     
-    fill(255,255,255,255);
+    fill(255);
     int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
     buffer.quad (topLeft.x, topLeft.y,
                  topRight.x, topRight.y,
