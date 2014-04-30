@@ -28,7 +28,7 @@ PVector bottomLeft = new PVector(20,HEIGHT-20);
 int currentlySelectedCalib = 1;
 
 boolean showTouchPoints = false;
-boolean findContours = false;
+boolean findBlobs = false;
 
 void setup() {
   size(WIDTH,HEIGHT);
@@ -50,12 +50,14 @@ void draw() {
     PImage blurred = tracker.display;
     // PImage blurred = new PImage(tracker.display.width, tracker.display.height);
     //fastSmallShittyBlur(tracker.display, blurred);
-    if (!findContours) {
+    if (!findBlobs) {
       image(blurred,0,0);
     } else {
+      /*
       ComponentFinder cf = new ComponentFinder(this, blurred);
       cf.find();
       image(cf.render_blobs(),0,0);
+      */
     }
   } else {
     pushMatrix();
@@ -152,13 +154,13 @@ void keyPressed() {
   } else if (key == 'a') {
     showTouchPoints = !showTouchPoints;
   } else if (key == 's') {
-    findContours = true;
+    findBlobs = true;
   }
 }
 
 void keyReleased() {
   if (key == 's') {
-    findContours = false;
+    findBlobs = false;
   }
 }
 
