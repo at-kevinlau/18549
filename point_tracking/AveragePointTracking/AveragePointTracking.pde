@@ -28,6 +28,7 @@ PVector bottomLeft = new PVector(20,HEIGHT-20);
 int currentlySelectedCalib = 1;
 
 boolean showTouchPoints = false;
+boolean findContours = false;
 
 void setup() {
   size(WIDTH,HEIGHT);
@@ -46,11 +47,13 @@ void draw() {
   PImage img = kinect.getDepthImage();
   if (showTouchPoints) {
     tracker.display(img, depth);
-    //image(tracker.display,0,0);
-    
-    ComponentFinder cf = new ComponentFinder(this, tracker.display);
-    cf.find();
-    image(cf.render_blobs(),0,0);
+    if (!findContours) {
+      image(tracker.display,0,0);
+    } else {
+      ComponentFinder cf = new ComponentFinder(this, tracker.display);
+      cf.find();
+      image(cf.render_blobs(),0,0);
+    }
   } else {
     pushMatrix();
     scale(-1.0,1.0);
@@ -145,6 +148,14 @@ void keyPressed() {
     System.out.println("Mouse game coordinates: " + screenXYtoGameXY(mouseX,mouseY));
   } else if (key == 'a') {
     showTouchPoints = !showTouchPoints;
+  } else if (key == 's') {
+    findContours = true;
+  }
+}
+
+void keyReleased() {
+  if (key == 's') {
+    findContours = false;
   }
 }
 
