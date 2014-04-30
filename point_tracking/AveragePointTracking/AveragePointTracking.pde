@@ -10,6 +10,7 @@ import java.awt.geom.Point2D;
 
 import org.openkinect.*;
 import org.openkinect.processing.*;
+import blobscanner.*;
 
 // Showing how we can farm all the kinect stuff out to a separate class
 KinectTracker tracker;
@@ -34,6 +35,7 @@ void setup() {
   size(WIDTH,HEIGHT);
   kinect = new Kinect(this);
   tracker = new KinectTracker();
+  bs = new Detector(this);
 }
 
 void draw() {
@@ -53,6 +55,10 @@ void draw() {
     if (!findBlobs) {
       image(blurred,0,0);
     } else {
+      bs.imageFindBlobs(blurred);
+      bs.weightBlobs(true);
+      bs.loadBlobsFeatures();
+      bs.drawSelectBox(1,color(255,0,0,0),1);
       /*
       ComponentFinder cf = new ComponentFinder(this, blurred);
       cf.find();
