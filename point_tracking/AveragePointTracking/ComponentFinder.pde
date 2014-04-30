@@ -170,7 +170,7 @@ class ComponentFinder
       P.y+cd[((i+n)%8)*2+1]);
        
       int pixelIndex = (int)(ni.y)*I.width+(int)(ni.x);
-      if (pixelIndex > I.pixels.length || pixelIndex < 0) {
+      if (pixelIndex >= I.pixels.length || pixelIndex < 0) {
         // nop
       }
       else if ((I.pixels[pixelIndex]&0xffffff) != 0xffffff)
