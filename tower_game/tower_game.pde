@@ -1,6 +1,5 @@
-
-import ZxingAdapter.ZxingAdapter;
-import ZxingAdapter.QRCode;
+import org.openkinect.*;
+import org.openkinect.processing.*;
 
 // ----- Constants -----
 final int WINDOW_WIDTH = 640;
@@ -16,14 +15,12 @@ final float  HEALTH_MAX = 500;
 
 // ----- Globals -----
 // System globals
-int state = GAME;
-//int state = START_MENU;
+//int state = GAME;
+int state = START_MENU;
 int offsetX, offsetY, gameWidth, gameHeight = -1;
 float[] calibrationPoints = new float[10];
 int calibrationPointsIdx = 0;
 boolean isCalibrated = false;
-ZxingAdapter zxing;
-QRCode qrs[];
 
 // Game globals
 // All game objects that can be drawn
@@ -41,28 +38,9 @@ ArrayList<Defense> defenseArray = new ArrayList<Defense>();
 int objX, objY;
 PImage bg;
 float health;
-/* Functions to handle external touch events */
 
-void updateObjLoc(int x, int y) {
-  objX = x;
-  objY = y;
-}
-
-void doMousePoint(int x, int y) {
-  switch(state) {
-  case DEFENSE:
-    defenseArray.add(new Defense(mouseX,mouseY,width,height));
-    state = STOP;
-  case GAME:
-  case FORWARD:
-  case STOP:
-    inputPressed(x, y);
-    break;
-  default:
-    print("Incorrect State: " + state);
-    break;
-  }
-}
+TouchHandler th;
+Kinect kinect;
 
 void setup()
 {
@@ -70,14 +48,20 @@ void setup()
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
   renderables = new ArrayList<Renderable>();
   updatables = new ArrayList<Updatable>();
-  health = HEALTH_MAX;
   
-  zxing = new ZxingAdapter();
-  objX = width/2;
-  objY = height/2;
+  kinect = new Kinect(this);
+  th = new TouchHandler(kinect);
+  
+  smooth();
+  
   /*
    * Game init
    */
+  health = HEALTH_MAX;
+  
+  objX = width / 2;
+  objY = height / 2;
+  
   players = new ArrayList<Player>();
   players.add(new Player(color(255,0,0), "Tanker Tamara", 50, 100));
   
@@ -85,19 +69,19 @@ void setup()
   currentPlayer = players.get(currentPlayerIndex);
   
   /* Init Enemies */
-  smooth();
-   for(int i=0; i<enemyArray.length; i++) {
+  for(int i=0; i<enemyArray.length; i++) {
     enemyArray[i] = new Enemy(width/2,height/2,10,width,height);  
   }
    
   defenseArray.add(new Defense(width/3,height/3,width,height));
 
   resetGame();
-  bg = loadImage("stars.jpg");
   
   /*
    * GUI
    */
+  bg = loadImage("stars.jpg");
+  
   // Next turn button
   Button nextTurnButton = new Button(w_percent(.80),h_percent(.79),w_percent(.18),h_percent(.08),"Forward")
   {
@@ -136,12 +120,12 @@ void setup()
 void draw()
 {
   fill(255);
-  updateQRs();
   switch(state) {
   case START_MENU:
     scale(-1.0, 1.0);
     break;
   case CALIBRATION:
+  /*
     background(0);
     fill(0);
     stroke(204, 102, 0);
@@ -159,14 +143,20 @@ void draw()
       translate(-offsetX, -offsetY);
     }
     break;
+  */
+    if (th.updateDraw()) {
+      state = GAME;
+    }
   case GAME:
   case FORWARD:
   case STOP:
   case DEFENSE:
-   update(mouseX, mouseY);
+    update(mouseX, mouseY);
+    /*
     if ((qrs != null) && (qrs.length > 0)) {
       inputRelease((int)(qrs[0].getCenterX()), (int)(qrs[0].getCenterY()));
     }
+    */
     renderGame();
     
     for(int i=0; i<enemyArray.length; i++) {
@@ -209,10 +199,6 @@ void draw()
   }
 }
 
-void updateQRs() {
-
-}
-
 void update(int mX, int mY)
 {
   if (!gameOver)
@@ -225,6 +211,29 @@ void update(int mX, int mY)
     board.update(mX, mY);
   }
 }
+
+/* Functions to handle external touch events */
+void updateObjLoc(int x, int y) {
+  objX = x;
+  objY = y;
+}
+
+void doMousePoint(int x, int y) {
+  switch(state) {
+  case DEFENSE:
+    defenseArray.add(new Defense(mouseX,mouseY,width,height));
+    state = STOP;
+  case GAME:
+  case FORWARD:
+  case STOP:
+    inputPressed(x, y);
+    break;
+  default:
+    print("Incorrect State: " + state);
+    break;
+  }
+}
+
 
 void makeMove(int x, int y)
 {
