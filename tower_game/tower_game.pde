@@ -3,6 +3,8 @@ import org.openkinect.processing.*;
 import ZxingAdapter.ZxingAdapter;
 import ZxingAdapter.QRCode;
 
+final boolean KINECT = false;
+
 // ----- Constants -----
 final int WINDOW_WIDTH = 640;
 final int WINDOW_HEIGHT = 480;
@@ -10,6 +12,9 @@ final int WINDOW_HEIGHT = 480;
 final int  START_MENU = 0;
 final int  CALIBRATION = 1;
 final int  GAME = 2;
+final int  FORWARD = 3;
+final int  STOP = 4;
+final int  DEFENSE = 5;
 
 // ----- Globals -----
 // System globals
@@ -35,7 +40,32 @@ boolean gameOver;
 Player winner;
 Board board;
 Enemy[] enemyArray = new Enemy[5];
+ArrayList<Defense> defenseArray = new ArrayList<Defense>();
+int objX, objY;
+PImage bg;
 
+/* Functions to handle external touch events */
+
+void updateObjLoc(int x, int y) {
+  objX = x;
+  objY = y;
+}
+
+void doMousePoint(int x, int y) {
+  switch(state) {
+  case DEFENSE:
+    defenseArray.add(new Defense(mouseX,mouseY,width,height));
+    state = STOP;
+  case GAME:
+  case FORWARD:
+  case STOP:
+    inputPressed(x, y);
+    break;
+  default:
+    print("Incorrect State: " + state);
+    break;
+  }
+}
 
 void setup()
 {
@@ -44,56 +74,68 @@ void setup()
   renderables = new ArrayList<Renderable>();
   updatables = new ArrayList<Updatable>();
   kinect = new Kinect(this);
-//  kinect.start();
-//  kinect.enableRGB(true);
+  if (KINECT) {
+    kinect.start();
+    kinect.enableRGB(true);
+  }
   zxing = new ZxingAdapter();
-  
+  objX = width/2;
+  objY = height/2;
   /*
    * Game init
    */
   players = new ArrayList<Player>();
-  players.add(new Player(color(255,0,0), "Red", 50, 100));
-  players.add(new Player(color(0,0,255), "Blue", 100, 50));
+  players.add(new Player(color(255,0,0), "Tanker Tamara", 50, 100));
   
   currentPlayerIndex = 0;
   currentPlayer = players.get(currentPlayerIndex);
   
   /* Init Enemies */
   smooth();
-   
-  // and actually create the objects and populate the
-  // array with them
-  for(int i=0; i<enemyArray.length; i++) {
-    enemyArray[i] = new Enemy(WINDOW_WIDTH/2,WINDOW_HEIGHT/2,10,width,height);  
+   for(int i=0; i<enemyArray.length; i++) {
+    enemyArray[i] = new Enemy(width/2,height/2,10,width,height);  
   }
+   
+  defenseArray.add(new Defense(width/3,height/3,width,height));
 
   resetGame();
+  bg = loadImage("stars.jpg");
   
   /*
    * GUI
    */
   // Next turn button
-  Button nextTurnButton = new Button(w_percent(.80),h_percent(.79),w_percent(.18),h_percent(.08),"Next turn")
+  Button nextTurnButton = new Button(w_percent(.80),h_percent(.79),w_percent(.18),h_percent(.08),"Forward")
   {
     public void onReleaseAction()
     {
-      // Only 1 player
-//      advanceCurrentPlayer();
+      state = FORWARD;
     }
   };
   renderables.add(nextTurnButton);
   updatables.add(nextTurnButton);
   
   // Reset button
-  Button resetButton = new Button(w_percent(.80),h_percent(.89),w_percent(.18),h_percent(.08),"Reset")
+  Button resetButton = new Button(w_percent(.80),h_percent(.89),w_percent(.18),h_percent(.08),"+ Defense")
   {
     public void onReleaseAction()
     {
-      resetGame();
+      state = DEFENSE;
+//      resetGame();
     }
   };
   renderables.add(resetButton);
   updatables.add(resetButton);
+  
+  Button stopButton = new Button(w_percent(.80),h_percent(.69),w_percent(.18),h_percent(.08),"Stop")
+  {
+    public void onReleaseAction()
+    {
+      state = STOP;
+    }
+  };
+  renderables.add(stopButton);
+  updatables.add(stopButton);
   
 }
 
@@ -128,20 +170,33 @@ void draw()
     }
     break;
   case GAME:
-    update(mouseX, mouseY);
+  case FORWARD:
+  case STOP:
+  case DEFENSE:
+   update(mouseX, mouseY);
     if ((qrs != null) && (qrs.length > 0)) {
       inputRelease((int)(qrs[0].getCenterX()), (int)(qrs[0].getCenterY()));
     }
     renderGame();
-    
-//    background(0);
-   
-    // iterate through every moving circle
+       // iterate through every moving circle
     for(int i=0; i<enemyArray.length; i++) {
-      enemyArray[i].update();
+       
+      enemyArray[i].update(objX,objY);
       enemyArray[i].checkCollisions();
       enemyArray[i].drawCircle();
+     
+       
     }
+    for(Defense d:defenseArray) {
+       d.update(enemyArray);
+       d.drawCircle();
+    }
+    for (int i = defenseArray.size() - 1; i >= 0; i--) {
+      Defense d =defenseArray.get(i); 
+       if (d.strength() <= 0)  {
+         defenseArray.remove(i);
+       }
+     }
 
     break;
   default:
@@ -151,18 +206,20 @@ void draw()
 }
 
 void updateQRs() {
-//  kinect.getVideoImage().loadPixels();
-//    if (zxing != null) {
-//      try {
-//        QRCode newQrs[] = zxing.readMultipleQRCode(kinect.getVideoImage().pixels, kinect.getVideoImage().width, kinect.getVideoImage().height);
-//        if ((newQrs != null) && (newQrs.length > 0)) { 
-//          qrs = newQrs;
-//          for (QRCode qr:newQrs){print(qr);} print("\n");
-//        }
-//      } catch (Exception ex) {
-//        print("failed to read:" + ex);
-//      }
-//    }
+  if (KINECT) {
+  kinect.getVideoImage().loadPixels();
+    if (zxing != null) {
+      try {
+        QRCode newQrs[] = zxing.readMultipleQRCode(kinect.getVideoImage().pixels, kinect.getVideoImage().width, kinect.getVideoImage().height);
+        if ((newQrs != null) && (newQrs.length > 0)) { 
+          qrs = newQrs;
+          for (QRCode qr:newQrs){print(qr);} print("\n");
+        }
+      } catch (Exception ex) {
+        print("failed to read:" + ex);
+      }
+    }
+   }
 }
 
 void update(int mX, int mY)
@@ -178,30 +235,7 @@ void update(int mX, int mY)
   }
 }
 
-void makeMove(int x, int y)
-{
-  if (gameOver)
-  {
-    return;
-  }
-  if (!board.makeMove(x, y, currentPlayer))
-  {
-    // failed to move
-    return;
-  }
-  
-  /*
-  Player possibleWinner = board.checkWinner();
-  if (possibleWinner != null)
-  {
-    gameOver = true;
-    winner = possibleWinner;
-  } else
-  {
-    advanceCurrentPlayer();
-  }
-  */
-}
+
 void advanceCurrentPlayer()
 {
   currentPlayer.originalX = currentPlayer.x;
@@ -232,8 +266,16 @@ void createBoard()
 void renderGame()
 {
   smooth();
-  background(100);
-  
+//  background(bg);
+  image(bg,0,0,width,height);
+
+  rectMode(CORNER);
+  if (state == FORWARD) {
+    fill(0,0,255);
+  } else {
+    fill(242,76,39);
+  }
+  rect(0,0,w_percent(1),h_percent(.20));
   rectMode(CORNER);
 
   for (Renderable r : renderables)
@@ -275,7 +317,9 @@ void renderGame()
     fill(255,255,255);
     textSize(40);
     text("Click anywhere to reset", w_percent(.5), h_percent(.9));
+    
   }
+
 }
 
 /*
@@ -322,8 +366,14 @@ void mousePressed()
       calibrationPointsIdx += 2;
     }
     break;
+  case DEFENSE:
+    defenseArray.add(new Defense(mouseX,mouseY,width,height));
+    state = STOP;
   case GAME:
+  case FORWARD:
+  case STOP:
     inputPressed(mouseX, mouseY);
+    break;
   default:
     print("Incorrect State: " + state);
     break;
@@ -356,7 +406,6 @@ void inputRelease(int inX, int inY)
     {
       u.registerMRelease(inX, inY, currentPlayer);
     }
-    makeMove(inX, inY);
   } else
   {
     resetGame();
