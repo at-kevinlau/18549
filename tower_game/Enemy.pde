@@ -24,7 +24,7 @@ class Enemy {
 
   }
    
-  void update(int dstX, int dstY) 
+  boolean update(int dstX, int dstY) 
   {
      int speed = 50;
      x += (dstX-x)/speed;
@@ -34,7 +34,9 @@ class Enemy {
      && y < dstY + margin && y > dstY - margin) {
        x= random(0,xBoard);
        y= random(0,yBoard);
+       return true;
      }
+     return false;
   }
    
   void checkCollisions() 
@@ -52,6 +54,8 @@ class Enemy {
     
      
   }
+
+   
    
   void drawCircle() 
   {

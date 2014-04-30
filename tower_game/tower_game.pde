@@ -12,6 +12,7 @@ final int  GAME = 2;
 final int  FORWARD = 3;
 final int  STOP = 4;
 final int  DEFENSE = 5;
+final float  HEALTH_MAX = 500;
 
 // ----- Globals -----
 // System globals
@@ -39,7 +40,7 @@ Enemy[] enemyArray = new Enemy[5];
 ArrayList<Defense> defenseArray = new ArrayList<Defense>();
 int objX, objY;
 PImage bg;
-
+float health;
 /* Functions to handle external touch events */
 
 void updateObjLoc(int x, int y) {
@@ -69,6 +70,7 @@ void setup()
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
   renderables = new ArrayList<Renderable>();
   updatables = new ArrayList<Updatable>();
+  health = HEALTH_MAX;
   
   zxing = new ZxingAdapter();
   objX = width/2;
@@ -166,15 +168,29 @@ void draw()
       inputRelease((int)(qrs[0].getCenterX()), (int)(qrs[0].getCenterY()));
     }
     renderGame();
-       // iterate through every moving circle
+    
     for(int i=0; i<enemyArray.length; i++) {
        
-      enemyArray[i].update(objX,objY);
+      boolean hit = enemyArray[i].update(objX,objY);
       enemyArray[i].checkCollisions();
       enemyArray[i].drawCircle();
      
-       
+       // Update health
+      if (hit) {
+        health = health - (health/10);
+      }
+      
+      fill(255,0,0);
+      rect(w_percent(.80),h_percent(.59),w_percent(.18)*(health/HEALTH_MAX),h_percent(.04));
+      if (health <= 10) {
+        fill(0,0,0);
+        stroke(0,0,0);
+        textSize(50);
+        text("You Died.", w_percent(.89), h_percent(.14));
+      }
+
     }
+    // Update defenses
     for(Defense d:defenseArray) {
        d.update(enemyArray);
        d.drawCircle();
@@ -185,7 +201,7 @@ void draw()
          defenseArray.remove(i);
        }
      }
-
+    
     break;
   default:
     print("Incorrect State: " + state);
