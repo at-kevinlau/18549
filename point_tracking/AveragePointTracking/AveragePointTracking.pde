@@ -61,10 +61,10 @@ void draw() {
     // create the mask for blob detection
     buffer.beginDraw();
     
-    buffer.fill(0);
+    buffer.fill(255);
     buffer.rect(0,0,WIDTH,HEIGHT);
     
-    buffer.fill(255);
+    buffer.fill(0);
     int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
     buffer.quad (topLeft.x, topLeft.y,
                  topRight.x, topRight.y,
