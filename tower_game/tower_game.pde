@@ -16,11 +16,8 @@ final float  HEALTH_MAX = 500;
 // ----- Globals -----
 // System globals
 //int state = GAME;
-int state = START_MENU;
+int state = GAME;
 int offsetX, offsetY, gameWidth, gameHeight = -1;
-float[] calibrationPoints = new float[10];
-int calibrationPointsIdx = 0;
-boolean isCalibrated = false;
 
 // Game globals
 // All game objects that can be drawn
@@ -50,7 +47,7 @@ void setup()
   updatables = new ArrayList<Updatable>();
   
   kinect = new Kinect(this);
-  th = new TouchHandler(kinect);
+  th = new TouchHandler(kinect, this);
   
   smooth();
   
@@ -147,6 +144,7 @@ void draw()
     if (th.updateDraw()) {
       state = GAME;
     }
+    break;
   case GAME:
   case FORWARD:
   case STOP:
@@ -259,6 +257,7 @@ void makeMove(int x, int y)
   }
   */
 }
+
 void advanceCurrentPlayer()
 {
   currentPlayer.originalX = currentPlayer.x;
@@ -355,27 +354,12 @@ void mousePressed()
   case START_MENU:
     state = CALIBRATION;
     print("State: " + state);
-    isCalibrated = false;
     offsetX = -1;
     offsetY = -1;
     gameWidth = -1;
     gameHeight = -1;
     break;
   case CALIBRATION:
-    if ((offsetX == -1) && (offsetY == -1)) {
-      offsetX = mouseX;
-      offsetY = mouseY;
-    } else if ((gameWidth == -1) && (gameHeight == -1)) {
-      gameWidth = mouseX - offsetX;
-      gameHeight = mouseY - offsetY;
-      print("Waiting for 3 calibration points...");
-    } else if (calibrationPointsIdx == 6) {
-      
-    } else {
-      calibrationPoints[calibrationPointsIdx] = mouseX;
-      calibrationPoints[calibrationPointsIdx+1] = mouseY;
-      calibrationPointsIdx += 2;
-    }
     break;
   case DEFENSE:
     defenseArray.add(new Defense(mouseX,mouseY,width,height));

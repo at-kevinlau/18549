@@ -41,11 +41,14 @@ boolean findBlobs = false;
 
 PGraphics buffer;
 
+tower_game game;
+
 //Detector bs;
 
-public TouchHandler(Kinect k) {
+public TouchHandler(Kinect k, tower_game g) {
   size(WIDTH,HEIGHT);
   kinect = k;
+  game = g;
   tracker = new KinectTracker(kinect);
   //bs = new Detector(this);
   buffer = createGraphics(tracker.kw,tracker.kh);
