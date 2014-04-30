@@ -32,7 +32,7 @@ class KinectTracker {
     loc = new PVector(0,0);
     lerpedLoc = new PVector(0,0);
   }
-
+  /*
   void track() {
 
     // Get the raw depth as array of integers
@@ -69,6 +69,7 @@ class KinectTracker {
     lerpedLoc.x = PApplet.lerp(lerpedLoc.x, loc.x, 0.3f);
     lerpedLoc.y = PApplet.lerp(lerpedLoc.y, loc.y, 0.3f);
   }
+  */
 
   PVector getLerpedPos() {
     return lerpedLoc;
@@ -78,8 +79,7 @@ class KinectTracker {
     return loc;
   }
 
-  void display() {
-    PImage img = kinect.getDepthImage();
+  void display(PImage img) {
 
     // Being overly cautious here
     if (depth == null || img == null) return;
@@ -105,9 +105,6 @@ class KinectTracker {
       }
     }
     display.updatePixels();
-
-    // Draw the image
-    image(display,0,0);
   }
   
   boolean inThreshold(int thr) {

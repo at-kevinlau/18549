@@ -27,6 +27,8 @@ PVector bottomLeft = new PVector(0,HEIGHT);
 // 1 = topLeft, 2 = topRight, 3 = bottomLeft
 int currentlySelectedCalib = 1;
 
+boolean showTouchPoints = false;
+
 void setup() {
   size(WIDTH,HEIGHT);
   kinect = new Kinect(this);
@@ -37,9 +39,15 @@ void draw() {
   background(255);
 
   // Run the tracking analysis
-  tracker.track();
+  // tracker.track();
   // Show the image
-  tracker.display();
+  PImage img = kinect.getDepthImage();
+  tracker.display(img);
+  if (showTouchPoints) {
+    image(tracker.display,0,0);
+  } else {
+    image(img, 0, 0);
+  }
 
   // Let's draw the raw location
   PVector v1 = tracker.getPos();
@@ -76,9 +84,9 @@ void draw() {
   text("threshold: " + t + "    " +  "framerate: " + (int)frameRate + "\n" +
        "threshold range: " + tBuf + "\n" +
        "perspective offset factor: " + pF + "\n" + 
-       "UP, DOWN to move threshold, LEFT, RIGHT to increase range,\n" + 
-       "CONTROL, ALT to change angle",0,30);
-  
+       "UP, DOWN to move threshold, LEFT, RIGHT to increase range\n" + 
+       "CONTROL, ALT to change angle\n" +
+       "A to toggle showing touch points",0,30);
 }
 
 void mousePressed() {
@@ -126,13 +134,18 @@ void keyPressed() {
     currentlySelectedCalib = 3;
   } else if (key == ' ') {
     System.out.println("Mouse game coordinates: " + screenXYtoGameXY(mouseX,mouseY));
+  } else if (key == 'a') {
+    showTouchPoints = ~showTouchPoints;
   }
 }
 
 Point toPoint(PVector p) {
-  return new Point((int)p.x, (int)p.y);  
+  return new Point((int)p.x, (int)p.y);
 }
 
+
+// After calibration, converts from a screen coordinate (some quadrilateral)
+// to a rectangular coordinate inside the calibration zone
 PVector screenXYtoGameXY(int scrX, int scrY)
 {
   int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
@@ -146,9 +159,9 @@ PVector screenXYtoGameXY(int scrX, int scrY)
   
   Point[] dst = new Point[4];
   dst[0] = new Point(0,0);
-  dst[1] = new Point(1000,0);
-  dst[2] = new Point(1000,1000);
-  dst[3] = new Point(0,1000);
+  dst[1] = new Point(1,0);
+  dst[2] = new Point(1,1);
+  dst[3] = new Point(0,1);
   
   PerspectiveTransform trans = PerspectiveTransform.getQuadToQuad(src[0].x, src[0].y,
                                                                   src[1].x, src[1].y,
