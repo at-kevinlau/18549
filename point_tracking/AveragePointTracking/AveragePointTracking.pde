@@ -40,7 +40,7 @@ void setup() {
   kinect = new Kinect(this);
   tracker = new KinectTracker();
   bs = new Detector(this);
-  buffer = createGraphics(WIDTH,HEIGHT);
+  buffer = createGraphics(tracker.kw,tracker.kh);
 }
 
 void draw() {
