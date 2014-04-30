@@ -90,11 +90,11 @@ class KinectTracker {
         if (inThreshold(rawDepth)) {
           // A red color instead
           // display.pixels[pix] = color(150,50,50);
-          display.pixels[pix] = color(0,0,0);
+          display.pixels[pix] = color(0,0,0,255);
         } 
         else {
           // display.pixels[pix] = img.pixels[offset];
-          display.pixels[pix] = color(255,255,255);
+          display.pixels[pix] = color(255,255,255,255);
         }
       }
     }

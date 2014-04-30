@@ -20,9 +20,9 @@ final int WIDTH = 600;
 final int HEIGHT = 400;
 
 // calibration points
-PVector topLeft = new PVector(0,0);
-PVector topRight = new PVector(WIDTH,0);
-PVector bottomLeft = new PVector(0,HEIGHT);
+PVector topLeft = new PVector(20,20);
+PVector topRight = new PVector(WIDTH-20,20);
+PVector bottomLeft = new PVector(20,HEIGHT-20);
 
 // 1 = topLeft, 2 = topRight, 3 = bottomLeft
 int currentlySelectedCalib = 1;
@@ -48,9 +48,10 @@ void draw() {
     tracker.display(img, depth);
     image(tracker.display,0,0);
   } else {
+    pushMatrix();
     scale(-1.0,1.0);
-    image(img, 0, 0);
-    scale(1.0,1.0);
+    image(img, -img.width, 0);
+    popMatrix();
   }
 
   // Let's draw the raw location
@@ -73,7 +74,7 @@ void draw() {
   fill (50,100,250,200);
   ellipse(bottomLeft.x,bottomLeft.y,20,20);
 
-  fill (128,128,128,128);
+  fill (128,128,128,64);
   int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
   quad (topLeft.x, topLeft.y,
         topRight.x, topRight.y,
