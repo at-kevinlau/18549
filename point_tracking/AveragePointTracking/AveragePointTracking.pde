@@ -31,11 +31,16 @@ int currentlySelectedCalib = 1;
 boolean showTouchPoints = false;
 boolean findBlobs = false;
 
+PGraphics buffer;
+
+Detector bs;
+
 void setup() {
   size(WIDTH,HEIGHT);
   kinect = new Kinect(this);
   tracker = new KinectTracker();
   bs = new Detector(this);
+  buffer = createGraphics(WIDTH,HEIGHT);
 }
 
 void draw() {
@@ -52,6 +57,24 @@ void draw() {
     PImage blurred = tracker.display;
     // PImage blurred = new PImage(tracker.display.width, tracker.display.height);
     //fastSmallShittyBlur(tracker.display, blurred);
+    
+    // create the mask for blob detection
+    buffer.beginDraw();
+    
+    fill(0,0,0,255);
+    buffer.rect(0,0,WIDTH,HEIGHT);
+    
+    fill(255,255,255,255);
+    int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
+    buffer.quad (topLeft.x, topLeft.y,
+                 topRight.x, topRight.y,
+                 topRight.x + bottomExtraWidth, bottomLeft.y,
+                 bottomLeft.x, bottomLeft.y);
+    
+    buffer.endDraw();
+    
+    blurred.mask(buffer);
+    
     if (!findBlobs) {
       image(blurred,0,0);
     } else {
@@ -93,11 +116,13 @@ void draw() {
   ellipse(bottomLeft.x,bottomLeft.y,20,20);
 
   fill (128,128,128,64);
+  /*
   int bottomExtraWidth = (int)(topLeft.x - bottomLeft.x);
   quad (topLeft.x, topLeft.y,
         topRight.x, topRight.y,
         topRight.x + bottomExtraWidth, bottomLeft.y,
         bottomLeft.x, bottomLeft.y);
+        */
 
   // Display some info
   int t = tracker.getThreshold();
