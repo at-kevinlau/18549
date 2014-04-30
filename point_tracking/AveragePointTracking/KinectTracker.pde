@@ -87,14 +87,15 @@ class KinectTracker {
         int rawDepth = depth[offset] + (int)(y*perspOffsetFactor);
 
         int pix = x+y*display.width;
-        if (inThreshold(rawDepth)) {
+        // if nothing in the depth range or if at the edges of the picture, return white
+        if (!inThreshold(rawDepth) || x == 0 || y == 0 || x == kw-1 || y == kh-1) {
+          // display.pixels[pix] = img.pixels[offset];
+          display.pixels[pix] = color(255,255,255,255);
+        } 
+        else {
           // A red color instead
           // display.pixels[pix] = color(150,50,50);
           display.pixels[pix] = color(0,0,0,255);
-        } 
-        else {
-          // display.pixels[pix] = img.pixels[offset];
-          display.pixels[pix] = color(255,255,255,255);
         }
       }
     }

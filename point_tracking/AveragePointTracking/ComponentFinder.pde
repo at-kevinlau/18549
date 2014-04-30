@@ -73,14 +73,14 @@ class ComponentFinder
       {
         if(L[pos] == 0) // Only process unlabeled pixels
         {
-          if (((I.pixels[pos]&0xffffff) != 0x000000))
+          if (((I.pixels[pos]&0xffffff) == 0xffffff))
           {
             // White pixel
             L[pos] = -1;
           }
-          else if (((I.pixels[pos]&0xffffff) == 0x000000))
+          else if (((I.pixels[pos]&0xffffff) != 0xffffff))
           {
-            if((I.pixels[pos-I.width]&0xffffff) != 0x000000)
+            if((I.pixels[pos-I.width]&0xffffff) == 0xffffff)
             {
               // If the pixel above is a white pixel,
               // then this is the start of an outer contour
@@ -89,7 +89,7 @@ class ComponentFinder
               contours.add(contourTrace(new PVector(x, y), 0, C));
               C++;
             }
-            if (((I.pixels[pos+I.width]&0xffffff) != 0x000000) && (L[pos+I.width] == 0))
+            if (((I.pixels[pos+I.width]&0xffffff) == 0xffffff) && (L[pos+I.width] == 0))
             {
               // If the pixel below is a white pixel, then it is the start of an
               // inner contour, and we get the id for the outer contour
@@ -100,10 +100,14 @@ class ComponentFinder
               } else {
                 l  = L[pos-1];
               }    
-              if (L[pos] != 0) L[pos] = l;
+              if (L[pos] != 0) {
+                L[pos] = l;
+              }
               contours.add(contourTrace(new PVector(x, y), 1, l));
             }
-            if(L[pos] == 0) if(L[pos-1] > 0) L[pos] = L[pos-1];
+            if (L[pos] == 0 && L[pos-1] > 0) {
+                L[pos] = L[pos-1];
+            }
           }
         }
         pos++;
@@ -168,7 +172,7 @@ class ComponentFinder
       if (pixelIndex > I.pixels.length || pixelIndex < 0) {
         // nop
       }
-      else if((I.pixels[pixelIndex]&0xffffff) == 0x000000)
+      else if ((I.pixels[pixelIndex]&0xffffff) != 0xffffff)
       {
         L[pixelIndex] = c;
         return (i+n) % 8;
