@@ -48,7 +48,7 @@ void draw() {
   if (showTouchPoints) {
     tracker.display(img, depth);
     PImage blurred = new PImage(tracker.display.width, tracker.display.height);
-    fastSmallShittyBlur(tracker.display, blurred);
+    //fastSmallShittyBlur(tracker.display, blurred);
     if (!findContours) {
       image(blurred,0,0);
     } else {
