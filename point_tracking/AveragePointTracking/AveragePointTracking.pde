@@ -39,11 +39,13 @@ void draw() {
   background(255);
 
   // Run the tracking analysis
-  // tracker.track();
+  // Get the raw depth as array of integers
+  int[] depth = kinect.getRawDepth();
+  // tracker.track(depth);
   // Show the image
   PImage img = kinect.getDepthImage();
-  tracker.display(img);
   if (showTouchPoints) {
+    tracker.display(img, depth);
     image(tracker.display,0,0);
   } else {
     image(img, 0, 0);
@@ -135,7 +137,7 @@ void keyPressed() {
   } else if (key == ' ') {
     System.out.println("Mouse game coordinates: " + screenXYtoGameXY(mouseX,mouseY));
   } else if (key == 'a') {
-    showTouchPoints = ~showTouchPoints;
+    showTouchPoints = !showTouchPoints;
   }
 }
 

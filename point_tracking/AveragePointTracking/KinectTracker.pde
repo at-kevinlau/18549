@@ -13,10 +13,6 @@ class KinectTracker {
   // Interpolated location
   PVector lerpedLoc;
 
-  // Depth data
-  int[] depth;
-
-
   PImage display;
 
   KinectTracker() {
@@ -33,11 +29,7 @@ class KinectTracker {
     lerpedLoc = new PVector(0,0);
   }
   /*
-  void track() {
-
-    // Get the raw depth as array of integers
-    depth = kinect.getRawDepth();
-
+  void track(int[] depth) {
     // Being overly cautious here
     if (depth == null) return;
 
@@ -79,7 +71,7 @@ class KinectTracker {
     return loc;
   }
 
-  void display(PImage img) {
+  void display(PImage img, int[] depth) {
 
     // Being overly cautious here
     if (depth == null || img == null) return;
