@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
+int motorPin = 3;
 
 /* Example code for the Adafruit TCS34725 breakout library */
 
@@ -16,7 +17,7 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_2_4MS, TCS347
 
 void setup(void) {
   tcs.begin();
-  pinMode(3, OUTPUT);
+  pinMode(motorPin, OUTPUT);
 }
 
 void loop(void) {
@@ -26,13 +27,13 @@ void loop(void) {
   
   if ((b > r) && (b > g)) {
     tcs.setInterrupt(false);      // turn on LED
-    analogWrite(3, 255);
+    analogWrite(motorPin, 255);
   } else {
     tcs.setInterrupt(true);      // turn off LED
     if (g > r) {
-      analogWrite(3, 255/3);
+      analogWrite(motorPin, 255/3);
     } else {
-      analogWrite(3, 0);
+      analogWrite(motorPin, 0);
     }
   }
 }
