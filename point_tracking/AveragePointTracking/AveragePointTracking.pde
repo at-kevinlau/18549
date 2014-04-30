@@ -47,7 +47,8 @@ void draw() {
   PImage img = kinect.getDepthImage();
   if (showTouchPoints) {
     tracker.display(img, depth);
-    PImage blurred = new PImage(tracker.display.width, tracker.display.height);
+    PImage blurred = tracker.display;
+    // PImage blurred = new PImage(tracker.display.width, tracker.display.height);
     //fastSmallShittyBlur(tracker.display, blurred);
     if (!findContours) {
       image(blurred,0,0);
