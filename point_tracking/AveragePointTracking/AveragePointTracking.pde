@@ -46,7 +46,11 @@ void draw() {
   PImage img = kinect.getDepthImage();
   if (showTouchPoints) {
     tracker.display(img, depth);
-    image(tracker.display,0,0);
+    //image(tracker.display,0,0);
+    
+    ComponentFinder cf = new ComponentFinder(this, tracker.display);
+    cf.find();
+    image(cf.render_blobs(),0,0);
   } else {
     pushMatrix();
     scale(-1.0,1.0);
@@ -124,10 +128,10 @@ void keyPressed() {
       tBuf+=1;
       tracker.setThresholdBuffer(tBuf);
     } else if (keyCode == ALT) {
-      pF+=.01;
+      pF+=.005;
       tracker.setPerspOffsetFactor(pF);
     } else if (keyCode == CONTROL) {
-      pF-=.01;
+      pF-=.005;
       tracker.setPerspOffsetFactor(pF);
     }
   }
