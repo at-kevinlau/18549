@@ -80,7 +80,7 @@ class ComponentFinder
           }
           else if (((I.pixels[pos]&0xffffff) != 0xffffff))
           {
-            if((I.pixels[pos-I.width]&0xffffff) == 0xffffff)
+            if(pos-I.width > 0 && (I.pixels[pos-I.width]&0xffffff) == 0xffffff)
             {
               // If the pixel above is a white pixel,
               // then this is the start of an outer contour
@@ -89,7 +89,8 @@ class ComponentFinder
               contours.add(contourTrace(new PVector(x, y), 0, C));
               C++;
             }
-            if (((I.pixels[pos+I.width]&0xffffff) == 0xffffff) && (L[pos+I.width] == 0))
+            if (pos+I.width < I.pixels.length &&
+                ((I.pixels[pos+I.width]&0xffffff) == 0xffffff) && (L[pos+I.width] == 0))
             {
               // If the pixel below is a white pixel, then it is the start of an
               // inner contour, and we get the id for the outer contour
