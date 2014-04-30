@@ -1,9 +1,6 @@
-import org.openkinect.*;
-import org.openkinect.processing.*;
+
 import ZxingAdapter.ZxingAdapter;
 import ZxingAdapter.QRCode;
-
-final boolean KINECT = false;
 
 // ----- Constants -----
 final int WINDOW_WIDTH = 640;
@@ -18,7 +15,6 @@ final int  DEFENSE = 5;
 
 // ----- Globals -----
 // System globals
-Kinect kinect;
 int state = GAME;
 //int state = START_MENU;
 int offsetX, offsetY, gameWidth, gameHeight = -1;
@@ -73,11 +69,7 @@ void setup()
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
   renderables = new ArrayList<Renderable>();
   updatables = new ArrayList<Updatable>();
-  kinect = new Kinect(this);
-  if (KINECT) {
-    kinect.start();
-    kinect.enableRGB(true);
-  }
+  
   zxing = new ZxingAdapter();
   objX = width/2;
   objY = height/2;
@@ -146,7 +138,6 @@ void draw()
   switch(state) {
   case START_MENU:
     scale(-1.0, 1.0);
-//    image(kinect.getVideoImage(), -width,0, width, height);
     break;
   case CALIBRATION:
     background(0);
@@ -159,10 +150,7 @@ void draw()
     if ((offsetX != -1) && (offsetY != -1) && (gameWidth != -1) && (gameHeight != -1)) {
       
       scale(-1.0, 1.0);
-//      PImage tempImage = kinect.getVideoImage();
-//      tempImage.filter(GRAY);
-//      image(tempImage, -width,0, width, height);
-      scale(-1.0, 1.0);
+
       translate(offsetX, offsetY);
       fill(0,0);
       rect(0,0,gameWidth,gameHeight);
@@ -206,20 +194,7 @@ void draw()
 }
 
 void updateQRs() {
-  if (KINECT) {
-  kinect.getVideoImage().loadPixels();
-    if (zxing != null) {
-      try {
-        QRCode newQrs[] = zxing.readMultipleQRCode(kinect.getVideoImage().pixels, kinect.getVideoImage().width, kinect.getVideoImage().height);
-        if ((newQrs != null) && (newQrs.length > 0)) { 
-          qrs = newQrs;
-          for (QRCode qr:newQrs){print(qr);} print("\n");
-        }
-      } catch (Exception ex) {
-        print("failed to read:" + ex);
-      }
-    }
-   }
+
 }
 
 void update(int mX, int mY)
@@ -235,7 +210,30 @@ void update(int mX, int mY)
   }
 }
 
-
+void makeMove(int x, int y)
+{
+  if (gameOver)
+  {
+    return;
+  }
+  if (!board.makeMove(x, y, currentPlayer))
+  {
+    // failed to move
+    return;
+  }
+  
+  /*
+  Player possibleWinner = board.checkWinner();
+  if (possibleWinner != null)
+  {
+    gameOver = true;
+    winner = possibleWinner;
+  } else
+  {
+    advanceCurrentPlayer();
+  }
+  */
+}
 void advanceCurrentPlayer()
 {
   currentPlayer.originalX = currentPlayer.x;
@@ -347,19 +345,7 @@ void mousePressed()
       gameHeight = mouseY - offsetY;
       print("Waiting for 3 calibration points...");
     } else if (calibrationPointsIdx == 6) {
-      float[] cal = new float[6];
-      for (int i = 0; i < 6; i++) {
-        if (i%2 == 0) {
-          cal[i] = calibrationPoints[i]/height*kinect.getVideoImage().width;
-        } else {
-          cal[i] = calibrationPoints[i]/height*kinect.getVideoImage().height;
-        }
-      }
-      print(cal);//$
-      zxing.calibrate(cal[0], cal[1], cal[2], cal[3], cal[4], cal[5], gameWidth, gameHeight, offsetX, offsetY);
-      print("Calibration complete!");
-      state = GAME;
-      print("State: " + state); 
+      
     } else {
       calibrationPoints[calibrationPointsIdx] = mouseX;
       calibrationPoints[calibrationPointsIdx+1] = mouseY;
@@ -406,6 +392,7 @@ void inputRelease(int inX, int inY)
     {
       u.registerMRelease(inX, inY, currentPlayer);
     }
+    makeMove(inX, inY);
   } else
   {
     resetGame();
